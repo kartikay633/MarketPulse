@@ -1,0 +1,51 @@
+{
+  "name": "market-pulse-intro",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host --port 5173",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@supabase/supabase-js": "^2.116.0",
+    "@tanstack/react-query": "^5.103.1",
+    "axios": "^1.20.0",
+    "compression": "^1.8.2",
+    "cors": "^2.8.6",
+    "date-fns": "^4.4.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "gsap": "^3.12.5",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
+    "joi": "^18.2.9",
+    "jsonwebtoken": "^9.0.3",
+    "lightweight-charts": "^5.2.1",
+    "lucide-react": "^1.47.0",
+    "node-cache": "^5.1.2",
+    "node-cron": "^4.6.0",
+    "pg": "^8.23.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.88.0",
+    "react-router-dom": "^6.30.6",
+    "sonner": "^2.0.8",
+    "three": "^0.170.0",
+    "uuid": "^14.0.2",
+    "ws": "^8.21.3",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^10.0.5",
+    "nodemon": "^3.1.14",
+    "vite": "^6.0.1"
+  }
+}
