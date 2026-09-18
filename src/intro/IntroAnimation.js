@@ -961,6 +961,10 @@ class MarketPulseExperience {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
     }
+    if (this._onResize) window.removeEventListener('resize', this._onResize);
+    if (this._onMouseMove) window.removeEventListener('mousemove', this._onMouseMove);
+    if (this._onKeyDown) window.removeEventListener('keydown', this._onKeyDown);
+    if (this._onClick) window.removeEventListener('click', this._onClick);
   }
 
   restart() {
@@ -977,23 +981,28 @@ class MarketPulseExperience {
   }
 
   bindEvents() {
-    window.addEventListener('resize', () => this.resize());
-    window.addEventListener('mousemove', (e) => {
+    this._onResize = () => this.resize();
+    this._onMouseMove = (e) => {
       const nx = (e.clientX / window.innerWidth - 0.5) * 2;
       const ny = (e.clientY / window.innerHeight - 0.5) * 2;
       this.universe.mouse.targetX = nx;
       this.universe.mouse.targetY = ny;
-    });
-    window.addEventListener('keydown', (e) => {
+    };
+    this._onKeyDown = (e) => {
       if (e.code === 'Space' || e.key === 'r' || e.key === 'R') {
         this.restart();
       }
-    });
-    window.addEventListener('click', () => {
+    };
+    this._onClick = () => {
       if (performance.now() - this.t0 > T.introComplete) {
         this.restart();
       }
-    });
+    };
+
+    window.addEventListener('resize', this._onResize);
+    window.addEventListener('mousemove', this._onMouseMove);
+    window.addEventListener('keydown', this._onKeyDown);
+    window.addEventListener('click', this._onClick);
   }
 
   resize() {
@@ -1026,19 +1035,32 @@ class MarketPulseExperience {
 }
 
 // ═══════════════════════════════════════════════════════════
-// BOOT
+// BOOT & EXPORTS
 // ═══════════════════════════════════════════════════════════
 
-if (window.MarketPulse && typeof window.MarketPulse.destroy === 'function') {
-  window.MarketPulse.destroy();
+export function startIntroExperience() {
+  if (window.MarketPulse && typeof window.MarketPulse.destroy === 'function') {
+    window.MarketPulse.destroy();
+  }
+  const exp = new MarketPulseExperience();
+  window.MarketPulse = exp;
+  return exp;
 }
+
+export { MarketPulseExperience };
+export default MarketPulseExperience;
 
 function boot() {
-  window.MarketPulse = new MarketPulseExperience();
+  if (document.getElementById('webgl-canvas') && document.getElementById('intro-canvas')) {
+    startIntroExperience();
+  }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
-} else {
-  boot();
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 }
+

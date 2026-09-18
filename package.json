@@ -4,9 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host --port 5173",
+    "dev": "concurrently -k -n \"api,web\" -c \"yellow,cyan\" \"npm run server:dev\" \"npm run client:dev\"",
+    "dev:backend": "nodemon server/index.js",
+    "dev:frontend": "vite --host --port 5173",
+    "server": "node server/index.js",
+    "server:dev": "nodemon server/index.js",
+    "client:dev": "vite --host --port 5173",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:migrate": "node server/db/migrate.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

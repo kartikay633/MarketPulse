@@ -63,20 +63,31 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// ─── API Routes (will be added in later phases) ────────────
-// app.use('/api/market', marketRoutes);
-// app.use('/api/stocks', stockRoutes);
-// app.use('/api/search', searchRoutes);
-// app.use('/api/news', newsRoutes);
-// app.use('/api/ai', aiRoutes);
-// app.use('/api/watchlist', watchlistRoutes);
-// app.use('/api/trade', tradeRoutes);
-// app.use('/api/portfolio', portfolioRoutes);
-// app.use('/api/alerts', alertRoutes);
-// app.use('/api/user', userRoutes);
+import userRoutes from './routes/userRoutes.js';
+import marketRoutes from './routes/marketRoutes.js';
+import stockRoutes from './routes/stockRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
+import newsRoutes from './routes/newsRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
+import watchlistRoutes from './routes/watchlistRoutes.js';
+import tradeRoutes from './routes/tradeRoutes.js';
+import portfolioRoutes from './routes/portfolioRoutes.js';
+import alertRoutes from './routes/alertRoutes.js';
+
+// ─── API Routes ─────────────────────────────────────────────
+app.use('/api/user', userRoutes);
+app.use('/api/market', marketRoutes);
+app.use('/api/stocks', stockRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/watchlist', watchlistRoutes);
+app.use('/api/trade', tradeRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/alerts', alertRoutes);
 
 // ─── 404 for unknown API routes ─────────────────────────────
-app.use('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
   res.status(404).json({
     error: `API endpoint not found: ${req.method} ${req.originalUrl}`,
     code: 'NOT_FOUND',

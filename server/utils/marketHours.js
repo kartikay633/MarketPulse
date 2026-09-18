@@ -125,3 +125,10 @@ export function isMarketActive() {
   const { status } = getMarketStatus();
   return status === 'OPEN' || status === 'PRE_MARKET' || status === 'POST_MARKET';
 }
+
+/**
+ * Check if market is currently strictly open for normal trading
+ */
+export function isMarketOpen() {
+  return getMarketStatus().status === 'OPEN';
+}
