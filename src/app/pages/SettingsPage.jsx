@@ -1,6 +1,6 @@
 // ROADMAP: Section 5 & 14 — User Profile & Settings Page
 // Institutional Terminal Styling — Exact Market Pulse Design System
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { usePortfolio } from '../hooks/useTrade';
@@ -13,6 +13,9 @@ import {
   LogOut,
   Sun,
   Moon,
+  Edit2,
+  Check,
+  X,
 } from 'lucide-react';
 import { formatIndianNumber } from '../utils/formatters';
 import { toast } from 'sonner';
@@ -22,12 +25,28 @@ import { useThemeStore } from '../stores/themeStore';
 export default function SettingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user, profile, logout } = useAuthStore();
+  const { user, profile, logout, updateProfile } = useAuthStore();
   const { data: portfolio } = usePortfolio();
 
   const [defaultChartType, setDefaultChartType] = useState(() => localStorage.getItem('mp_default_chart') || 'Candles');
   const [refreshInterval, setRefreshInterval] = useState(() => localStorage.getItem('mp_refresh_interval') || '15');
   const [isResetting, setIsResetting] = useState(false);
+
+  // Profile Edit State
+  const resolvedDisplayName = profile?.displayName || profile?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.full_name || 'Kartikay Gupta';
+  const resolvedEmail = (user?.email && user.email !== 'trader@marketpulse.in' && user.email !== 'demo@marketpulse.in')
+    ? user.email
+    : (profile?.email && profile.email !== 'trader@marketpulse.in' ? profile.email : 'kartikay633@gmail.com');
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState(resolvedDisplayName);
+  const [editEmail, setEditEmail] = useState(resolvedEmail);
+
+  // Keep state in sync if store changes
+  useEffect(() => {
+    setEditName(resolvedDisplayName);
+    setEditEmail(resolvedEmail);
+  }, [resolvedDisplayName, resolvedEmail]);
 
   const { theme, setTheme } = useThemeStore();
 
@@ -46,6 +65,22 @@ export default function SettingsPage() {
     setRefreshInterval(val);
     localStorage.setItem('mp_refresh_interval', val);
     toast.success(`Data refresh interval updated to ${val}s`);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e?.preventDefault();
+    if (!editName.trim()) {
+      toast.error('Please provide a valid trader name');
+      return;
+    }
+    await updateProfile({
+      displayName: editName.trim(),
+      display_name: editName.trim(),
+      full_name: editName.trim(),
+      email: editEmail.trim() || resolvedEmail,
+    });
+    setIsEditingProfile(false);
+    toast.success('Trader profile updated successfully');
   };
 
   const handleResetPortfolio = async () => {
@@ -71,8 +106,6 @@ export default function SettingsPage() {
     navigate('/login');
   };
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Trader';
-  const email = user?.email || 'demo@marketpulse.in';
   const cashBalance = portfolio?.account?.cashBalance ?? 1000000;
 
   return (
@@ -94,22 +127,89 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* User Profile Card */}
           <div className="card card-body">
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>
-              Trader Profile
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                Trader Profile
+              </div>
+              {!isEditingProfile ? (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProfile(true)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: '11.5px', padding: '4px 10px', gap: '5px' }}
+                >
+                  <Edit2 size={12} />
+                  <span>Edit Profile</span>
+                </button>
+              ) : null}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), #6366F1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '16px', fontWeight: 600 }}>
-                {displayName.charAt(0).toUpperCase()}
+            {!isEditingProfile ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), #6366F1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '16px', fontWeight: 600 }}>
+                  {resolvedDisplayName.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{resolvedDisplayName}</div>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{resolvedEmail}</div>
+                </div>
+                <span className="badge badge--positive badge--sm" style={{ animation: 'pulseGlow 2s ease-in-out infinite' }}>
+                  ACTIVE SESSION
+                </span>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{displayName}</div>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{email}</div>
-              </div>
-              <span className="badge badge--positive badge--sm" style={{ animation: 'pulseGlow 2s ease-in-out infinite' }}>
-                ACTIVE SESSION
-              </span>
-            </div>
+            ) : (
+              <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Trader Name</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="e.g. Kartikay Gupta"
+                      style={{ fontSize: '13px', padding: '8px 12px' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Email Address</label>
+                    <input
+                      type="email"
+                      className="input"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      placeholder="e.g. kartikay633@gmail.com"
+                      style={{ fontSize: '13px', padding: '8px 12px' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditName(resolvedDisplayName);
+                      setEditEmail(resolvedEmail);
+                      setIsEditingProfile(false);
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '12px' }}
+                  >
+                    <X size={12} />
+                    <span>Cancel</span>
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-sm"
+                    style={{ fontSize: '12px', gap: '5px' }}
+                  >
+                    <Check size={12} />
+                    <span>Save Changes</span>
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
 
           {/* Paper Trading Account Card */}

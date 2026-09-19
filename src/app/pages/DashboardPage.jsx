@@ -192,16 +192,17 @@ export default function DashboardPage() {
                   gap: '6px',
                   padding: '5px 12px',
                   borderRadius: 'var(--radius-xs)',
-                  backgroundColor: 'var(--surface)',
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border)',
+                  backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                  color: '#c084fc',
+                  border: '1px solid rgba(168, 85, 247, 0.40)',
                   fontSize: '11.5px',
                   fontWeight: 600,
                   textDecoration: 'none',
+                  boxShadow: '0 0 12px rgba(168, 85, 247, 0.20)',
                 }}
               >
-                <Sparkles size={13} color="var(--accent)" />
-                <span>Pulse AI Research</span>
+                <Sparkles size={13} color="#c084fc" />
+                <span>Agentic AI Quant Lab (5-Yr ML)</span>
               </Link>
             </div>
           </div>

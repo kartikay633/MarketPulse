@@ -32,7 +32,10 @@ export function TopBar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Trader';
+  const displayName = profile?.displayName || profile?.full_name || user?.user_metadata?.display_name || user?.user_metadata?.full_name || (user?.email && user.email !== 'trader@marketpulse.in' ? user.email.split('@')[0] : 'Kartikay Gupta') || 'Kartikay Gupta';
+  const email = (user?.email && user.email !== 'trader@marketpulse.in' && user.email !== 'demo@marketpulse.in')
+    ? user.email
+    : (profile?.email && profile.email !== 'trader@marketpulse.in' ? profile.email : 'kartikay633@gmail.com');
 
   const handleLogout = async () => {
     await logout();
@@ -111,7 +114,7 @@ export function TopBar() {
                   <div className="dropdown-header">
                     <div className="dropdown-label">Account</div>
                     <div className="dropdown-value">
-                      {user?.email || 'demo@marketpulse.in'}
+                      {email}
                     </div>
                   </div>
 

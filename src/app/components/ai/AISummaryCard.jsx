@@ -274,12 +274,17 @@ export default function AISummaryCard() {
             alignItems: 'center',
             gap: '4px',
             fontSize: '12px',
-            color: 'var(--accent-bright)',
+            color: '#c084fc',
             fontWeight: 600,
             textDecoration: 'none',
+            backgroundColor: 'rgba(168, 85, 247, 0.12)',
+            padding: '3px 8px',
+            borderRadius: 'var(--radius-xs)',
+            border: '1px solid rgba(168, 85, 247, 0.3)',
           }}
         >
-          <span>Deep Research Desk</span>
+          <Sparkles size={12} color="#c084fc" />
+          <span>Launch Agentic Quant Lab (5-Yr ML)</span>
           <ArrowRight size={13} />
         </Link>
       </div>

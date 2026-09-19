@@ -12,7 +12,6 @@ import {
   Bell,
   Settings,
   ShieldCheck,
-  Play,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -22,7 +21,7 @@ const NAV_ITEMS = [
   { name: 'Portfolio', path: '/portfolio', icon: Briefcase, color: '#A855F7' },
   { name: 'Trade Terminal', path: '/trade', icon: CandlestickChart, color: '#06B6D4' },
   { name: 'News Pulse', path: '/news', icon: Newspaper, color: '#F97316' },
-  { name: 'Pulse AI', path: '/ai', icon: Bot, badge: 'RESEARCH', color: '#3B82F6' },
+  { name: 'Pulse AI', path: '/ai', icon: Bot, badge: 'AGENTIC ML', color: '#3B82F6' },
   { name: 'Price Alerts', path: '/alerts', icon: Bell, color: '#F43F5E' },
 ];
 
@@ -73,7 +72,7 @@ export function Sidebar() {
                     >
                       <Icon size={16} />
                     </div>
-                    <span style={{ color: isActive ? '#FFFFFF' : 'var(--text-secondary)', fontWeight: isActive ? 600 : 500 }}>
+                    <span className="sidebar-nav-label">
                       {item.name}
                     </span>
                   </div>
@@ -104,20 +103,28 @@ export function Sidebar() {
             `sidebar-nav-item${isActive ? ' sidebar-nav-item--active' : ''}`
           }
         >
-          <div className="sidebar-nav-item-inner">
-            <Settings size={16} />
-            <span>Settings</span>
-          </div>
+          {({ isActive }) => (
+            <div className="sidebar-nav-item-inner">
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  color: isActive ? '#3B82F6' : 'inherit',
+                  filter: isActive ? 'drop-shadow(0 0 6px #3B82F6)' : 'none',
+                  transition: 'all var(--transition-fast)',
+                }}
+              >
+                <Settings size={16} />
+              </div>
+              <span className="sidebar-nav-label">Settings</span>
+            </div>
+          )}
         </NavLink>
       </nav>
 
       {/* Bottom Status Box */}
       <div className="sidebar-footer">
-        <Link to="/" className="sidebar-replay-btn">
-          <Play size={13} color="var(--accent)" />
-          <span>Replay 3D Intro</span>
-        </Link>
-
         <div className="sidebar-capital">
           <ShieldCheck size={14} color="var(--positive)" />
           <span>Simulated ₹10,00,000</span>

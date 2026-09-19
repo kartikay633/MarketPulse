@@ -35,3 +35,13 @@ export function useAIChat() {
     },
   });
 }
+
+export function useAgenticAnalysis() {
+  return useMutation({
+    mutationFn: async ({ symbol, strategy, timeframe }) => {
+      const res = await api.post('/ai/agentic-analysis', { symbol, strategy, timeframe });
+      return res.data;
+    },
+  });
+}
+

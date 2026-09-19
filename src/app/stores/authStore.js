@@ -55,13 +55,26 @@ export const useAuthStore = create((set, get) => ({
         if (savedUserStr) {
           try {
             const savedUser = JSON.parse(savedUserStr);
+            const userEmail = (savedUser.email && savedUser.email !== 'trader@marketpulse.in' && savedUser.email !== 'demo@marketpulse.in')
+              ? savedUser.email
+              : 'kartikay633@gmail.com';
+            const userName = savedUser.user_metadata?.display_name || savedUser.user_metadata?.full_name || 'Kartikay Gupta';
+
+            savedUser.email = userEmail;
+            savedUser.user_metadata = {
+              ...(savedUser.user_metadata || {}),
+              display_name: userName,
+              full_name: userName,
+            };
+
             set({
               user: savedUser,
               session: { access_token: 'local_token', user: savedUser },
               profile: {
                 id: savedUser.id,
-                email: savedUser.email,
-                displayName: savedUser.user_metadata?.display_name || savedUser.email.split('@')[0],
+                email: userEmail,
+                displayName: userName,
+                full_name: userName,
                 experienceLevel: 'intermediate',
                 onboardingCompleted: true,
               },
@@ -74,8 +87,8 @@ export const useAuthStore = create((set, get) => ({
           // Default to pre-authenticated terminal operator session
           const defaultTrader = {
             id: 'trader-institutional-01',
-            email: 'trader@marketpulse.in',
-            user_metadata: { display_name: 'Kartikay Gupta' },
+            email: 'kartikay633@gmail.com',
+            user_metadata: { display_name: 'Kartikay Gupta', full_name: 'Kartikay Gupta' },
           };
           set({
             user: defaultTrader,
@@ -84,6 +97,7 @@ export const useAuthStore = create((set, get) => ({
               id: defaultTrader.id,
               email: defaultTrader.email,
               displayName: 'Kartikay Gupta',
+              full_name: 'Kartikay Gupta',
               experienceLevel: 'intermediate',
               onboardingCompleted: true,
             },
@@ -118,8 +132,8 @@ export const useAuthStore = create((set, get) => ({
       // Even if supabase fails, ensure terminal operator can access
       const defaultTrader = {
         id: 'trader-institutional-01',
-        email: 'trader@marketpulse.in',
-        user_metadata: { display_name: 'Kartikay Gupta' },
+        email: 'kartikay633@gmail.com',
+        user_metadata: { display_name: 'Kartikay Gupta', full_name: 'Kartikay Gupta' },
       };
       set({
         user: defaultTrader,
@@ -128,6 +142,7 @@ export const useAuthStore = create((set, get) => ({
           id: defaultTrader.id,
           email: defaultTrader.email,
           displayName: 'Kartikay Gupta',
+          full_name: 'Kartikay Gupta',
           experienceLevel: 'intermediate',
           onboardingCompleted: true,
         },
@@ -299,13 +314,14 @@ export const useAuthStore = create((set, get) => ({
   loginAsDemo: () => {
     const demoUser = {
       id: 'demo-trader-001',
-      email: 'trader@marketpulse.in',
-      user_metadata: { display_name: 'Kartikay Gupta' },
+      email: 'kartikay633@gmail.com',
+      user_metadata: { display_name: 'Kartikay Gupta', full_name: 'Kartikay Gupta' },
     };
     const demoProfile = {
       id: 'demo-trader-001',
-      email: 'trader@marketpulse.in',
+      email: 'kartikay633@gmail.com',
       displayName: 'Kartikay Gupta',
+      full_name: 'Kartikay Gupta',
       experienceLevel: 'intermediate',
       interestedSectors: ['Information Technology (IT)', 'Banking & Financials', 'Automobiles & EV'],
       onboardingCompleted: true,
@@ -369,14 +385,42 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Update user profile (e.g. after onboarding)
+  // Update user profile (e.g. after onboarding or settings edit)
   updateProfile: async (updates) => {
     try {
-      const res = await api.patch('/user/profile', updates);
-      if (res.data?.profile) {
-        set({ profile: res.data.profile });
-      }
-      return { success: true, profile: res.data?.profile };
+      const currentUser = get().user || {};
+      const newEmail = updates.email || currentUser.email || 'kartikay633@gmail.com';
+      const newName = updates.displayName || updates.display_name || updates.full_name || currentUser.user_metadata?.display_name || 'Kartikay Gupta';
+
+      const updatedUser = {
+        ...currentUser,
+        email: newEmail,
+        user_metadata: {
+          ...(currentUser.user_metadata || {}),
+          display_name: newName,
+          full_name: newName,
+        },
+      };
+
+      const updatedProfile = {
+        ...(get().profile || {}),
+        ...updates,
+        email: newEmail,
+        displayName: newName,
+        full_name: newName,
+      };
+
+      localStorage.setItem('market_pulse_user', JSON.stringify(updatedUser));
+      set({ user: updatedUser, profile: updatedProfile });
+
+      try {
+        const res = await api.patch('/user/profile', updates);
+        if (res.data?.profile) {
+          set({ profile: { ...updatedProfile, ...res.data.profile } });
+        }
+      } catch (_) {}
+
+      return { success: true, profile: updatedProfile };
     } catch (err) {
       return { success: false, error: err.message };
     }

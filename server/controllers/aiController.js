@@ -34,6 +34,16 @@ export class AIController {
     }
   }
 
+  async runAgenticAnalysis(req, res, next) {
+    try {
+      const { symbol, strategy, timeframe } = req.body || {};
+      const result = await aiService.runAgenticAnalysis({ symbol, strategy, timeframe });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getConversations(req, res, next) {
     try {
       const { id } = req.query;
