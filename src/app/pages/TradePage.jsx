@@ -1,9 +1,9 @@
 // ROADMAP: Section 5 & 11 — Paper Trade Terminal Component
 // Institutional Terminal Styling — Exact Market Pulse Design System
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useStockQuote } from '../hooks/useMarketData';
-import { usePortfolio, useOrders, useExecuteTrade } from '../hooks/useTrade';
+import { usePortfolio, useOrders, useExecuteTrade, useResetPortfolio, useAddFunds } from '../hooks/useTrade';
 import {
   Zap,
   TrendingUp,
@@ -16,31 +16,105 @@ import {
   ShieldCheck,
   Search,
   CheckCircle2,
+  ChevronDown,
+  Sparkles,
+  RotateCcw,
+  PlusCircle,
+  Sliders,
+  DollarSign,
+  Info,
+  Layers,
+  ArrowUpRight,
 } from 'lucide-react';
-import { formatIndianNumber } from '../utils/formatters';
+import { formatIndianNumber, formatINR } from '../utils/formatters';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import CompanyLogo from '../components/common/CompanyLogo';
+import { EQUITIES_UNIVERSE, searchEquities } from '../constants/equities';
 
 const POPULAR_SYMBOLS = [
-  'NSE:RELIANCE',
+  'NSE:TATAMOTORS',
+  'NSE:TATASTEEL',
   'NSE:TCS',
+  'NSE:RELIANCE',
   'NSE:HDFCBANK',
   'NSE:INFY',
   'NSE:ICICIBANK',
-  'NSE:TATAMOTORS',
-  'NSE:ITC',
   'NSE:SBIN',
 ];
+
+// High-tech institutional synthesizer sound cue
+function playExecutionSound(type = 'BUY') {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'BUY') {
+      // Pleasant dual-pitch institutional chime (D5 -> A5)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+    } else {
+      // Crisp exit tone (E5 -> C5)
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(523.25, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+    }
+  } catch (err) {
+    // Web Audio blocked or unsupported; silent fallback
+  }
+}
+
+// Highlight matching substring for YouTube-style autocomplete
+function HighlightMatch({ text, query }) {
+  if (!query || !text) return <span>{text}</span>;
+  const q = query.trim().toLowerCase().replace(/^nse:|^bse:/, '');
+  const index = text.toLowerCase().indexOf(q);
+  if (index === -1) return <span>{text}</span>;
+
+  const before = text.slice(0, index);
+  const match = text.slice(index, index + q.length);
+  const after = text.slice(index + q.length);
+
+  return (
+    <span>
+      {before}
+      <strong style={{ color: 'var(--accent-bright)', textDecoration: 'underline' }}>{match}</strong>
+      {after}
+    </span>
+  );
+}
 
 export default function TradePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const urlSymbol = searchParams.get('symbol') || 'NSE:RELIANCE';
+  const urlSymbol = searchParams.get('symbol') || 'NSE:TATAMOTORS';
   const [selectedSymbol, setSelectedSymbol] = useState(urlSymbol);
   const [customInput, setCustomInput] = useState('');
   const [orderType, setOrderType] = useState('BUY'); // 'BUY' | 'SELL'
+  const [productType, setProductType] = useState('CNC'); // 'CNC' (1x Delivery) | 'MIS' (5x Intraday)
+  const [executionType, setExecutionType] = useState('MARKET'); // 'MARKET' | 'LIMIT'
+  const [limitPrice, setLimitPrice] = useState('');
   const [quantity, setQuantity] = useState(10);
+  const [isSuccessGlow, setIsSuccessGlow] = useState(false);
+
+  // Typeahead Autocomplete State
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const searchContainerRef = useRef(null);
 
   // Sync if URL query param changes
   useEffect(() => {
@@ -49,38 +123,106 @@ export default function TradePage() {
     }
   }, [urlSymbol]);
 
-  // Fetch Live Quote for selected symbol
+  // Live Quote & Portfolio Queries
   const { data: quote, isLoading: isQuoteLoading, refetch: refetchQuote } = useStockQuote(selectedSymbol);
-
-  // Fetch Portfolio & Orders
   const { data: portfolioData, isLoading: isPortfolioLoading, refetch: refetchPortfolio } = usePortfolio();
   const { data: orders = [], isLoading: isOrdersLoading, refetch: refetchOrders } = useOrders(50);
+
+  // Mutations
   const executeMutation = useExecuteTrade();
+  const resetMutation = useResetPortfolio();
+  const addFundsMutation = useAddFunds();
 
   const cashBalance = portfolioData?.account?.cashBalance ?? 1000000;
+  const totalInvested = portfolioData?.account?.totalInvested ?? 0;
+  const portfolioTotalValue = portfolioData?.account?.portfolioTotalValue ?? cashBalance;
   const positions = portfolioData?.positions ?? [];
+
   const currentPosition = positions.find(
     (p) => p.symbol.toUpperCase() === selectedSymbol.toUpperCase()
   );
 
   const ltp = quote?.ltp || 0;
   const isPositive = (quote?.change ?? 0) >= 0;
-  const orderTotal = Number((quantity * ltp).toFixed(2));
+
+  // Initialize or update limit price default when LTP changes
+  useEffect(() => {
+    if (ltp && (!limitPrice || executionType === 'MARKET')) {
+      setLimitPrice(ltp.toFixed(2));
+    }
+  }, [ltp, executionType]);
+
+  // Determine effective execution price
+  const effectivePrice = executionType === 'LIMIT' && limitPrice && !isNaN(limitPrice)
+    ? parseFloat(limitPrice)
+    : ltp;
+
+  // Calculations
+  const grossValue = Number((quantity * effectivePrice).toFixed(2));
+  // CNC requires 100% cash; MIS requires 20% (5x intraday margin)
+  const requiredMargin = productType === 'MIS'
+    ? Number((grossValue / 5).toFixed(2))
+    : grossValue;
+
+  const buyingPowerCNC = cashBalance;
+  const buyingPowerMIS = cashBalance * 5;
+  const currentBuyingPower = productType === 'MIS' ? buyingPowerMIS : buyingPowerCNC;
 
   // Validation
-  const canBuy = orderType === 'BUY' && cashBalance >= orderTotal && quantity > 0 && ltp > 0;
+  const canBuy = orderType === 'BUY' && cashBalance >= requiredMargin && quantity > 0 && effectivePrice > 0;
   const canSell =
     orderType === 'SELL' &&
     currentPosition &&
     currentPosition.quantity >= quantity &&
     quantity > 0 &&
-    ltp > 0;
+    effectivePrice > 0;
   const isExecutable = orderType === 'BUY' ? canBuy : canSell;
+
+  // Autocomplete Suggestions
+  const suggestions = searchEquities(customInput, 8);
+  const [dropdownDismissed, setDropdownDismissed] = useState(false);
+  const showDropdown = !dropdownDismissed && customInput.trim().length > 0 && suggestions.length > 0;
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setIsSearchFocused(false);
+        setDropdownDismissed(true);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSelectSymbol = (sym) => {
     setSelectedSymbol(sym);
     setSearchParams({ symbol: sym });
     setCustomInput('');
+    setIsSearchFocused(false);
+    setActiveSuggestionIndex(-1);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (!showDropdown || suggestions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveSuggestionIndex((prev) => (prev + 1) % suggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveSuggestionIndex((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeSuggestionIndex >= 0 && activeSuggestionIndex < suggestions.length) {
+        handleSelectSymbol(suggestions[activeSuggestionIndex].symbol);
+      } else if (suggestions.length > 0) {
+        handleSelectSymbol(suggestions[0].symbol);
+      }
+    } else if (e.key === 'Escape') {
+      setIsSearchFocused(false);
+      setDropdownDismissed(true);
+    }
   };
 
   const handleCustomSymbolSubmit = (e) => {
@@ -93,6 +235,10 @@ export default function TradePage() {
 
   const handleExecute = () => {
     if (!isExecutable || executeMutation.isPending) return;
+
+    playExecutionSound(orderType);
+    setIsSuccessGlow(true);
+    setTimeout(() => setIsSuccessGlow(false), 800);
 
     executeMutation.mutate(
       {
@@ -110,98 +256,337 @@ export default function TradePage() {
     );
   };
 
-  const quickQtyList = [1, 5, 10, 25, 50, 100];
+  // Allocation Percentage Quick Setters
+  const handleSetAllocation = (percent) => {
+    if (!effectivePrice || effectivePrice <= 0) return;
+    const availableAllocated = cashBalance * (percent / 100);
+    const leverageFactor = productType === 'MIS' ? 5 : 1;
+    const maxAffordable = Math.floor((availableAllocated * leverageFactor) / effectivePrice);
+    setQuantity(Math.max(1, maxAffordable));
+  };
+
+  const quickQtyList = [1, 5, 10, 25, 50, 100, 250];
 
   return (
     <ErrorBoundary>
       <div className="page-container-wide">
-        {/* Page Header */}
-        <div className="page-header">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <h1 className="page-title">
-                Simulated Trading Desk
+        {/* Institutional Simulated Capital Cockpit */}
+        <div
+          className="card card-padded"
+          style={{
+            marginBottom: '18px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(14, 165, 233, 0.05) 50%, rgba(255, 255, 255, 0.01) 100%), var(--surface)',
+            borderColor: 'rgba(59, 130, 246, 0.28)',
+            boxShadow: '0 8px 30px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.15)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Header & Subtitle */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h1 className="page-title" style={{ fontSize: '20px', margin: 0 }}>
+                Institutional Order Desk
               </h1>
-              <span className="badge badge--accent">
-                PAPER CAPITAL ₹10,00,000
+              <span className="badge badge--live" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Zap size={11} /> LIVE EXECUTION ENGINE
               </span>
             </div>
-            <p className="page-subtitle">
-              Simulated order ticket executing against live NSE / BSE market ticks with zero risk to personal capital.
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: 0 }}>
+              Zero-risk simulated terminal executing against live NSE / BSE price discovery ticks.
             </p>
           </div>
 
-          {/* Virtual Account Balance Pill */}
-          <div
-            className="card"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '10px 18px',
-              borderLeft: '3px solid var(--accent)',
-            }}
-          >
-            <Wallet size={18} color="var(--accent)" />
-            <div>
-              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Available Cash
+          {/* Capital Telemetry & Interactive Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', zIndex: 1 }}>
+            {/* Free Cash Balance */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 16px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <Wallet size={18} color="var(--accent-bright)" />
+              <div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Available Cash
+                </div>
+                <div className="num-tabular" style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  ₹{formatIndianNumber(cashBalance)}
+                </div>
               </div>
-              <div className="num-tabular" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                ₹{formatIndianNumber(cashBalance)}
+            </div>
+
+            {/* Buying Power Display */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 16px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--surface)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <Zap size={18} color="var(--positive)" />
+              <div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Intraday Buying Power (5x)
+                </div>
+                <div className="num-tabular" style={{ fontSize: '15px', fontWeight: 700, color: 'var(--positive)' }}>
+                  ₹{formatIndianNumber(buyingPowerMIS)}
+                </div>
               </div>
+            </div>
+
+            {/* Capital Quick Add & Reset Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={() => addFundsMutation.mutate(100000)}
+                disabled={addFundsMutation.isPending}
+                className="btn btn-secondary"
+                style={{ padding: '6px 10px', fontSize: '11.5px', gap: '4px' }}
+                title="Add ₹1,00,000 virtual trading cash"
+              >
+                <PlusCircle size={13} color="var(--positive)" />
+                <span>+₹1L</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => addFundsMutation.mutate(500000)}
+                disabled={addFundsMutation.isPending}
+                className="btn btn-secondary"
+                style={{ padding: '6px 10px', fontSize: '11.5px', gap: '4px' }}
+                title="Add ₹5,00,000 virtual trading cash"
+              >
+                <PlusCircle size={13} color="var(--positive)" />
+                <span>+₹5L</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Reset virtual portfolio to ₹10,00,000 capital and clear paper positions?')) {
+                    resetMutation.mutate();
+                  }
+                }}
+                disabled={resetMutation.isPending}
+                className="btn btn-ghost"
+                style={{ padding: '6px 10px', fontSize: '11.5px', gap: '4px', color: 'var(--text-muted)' }}
+                title="Reset portfolio back to ₹10,00,000 default"
+              >
+                <RotateCcw size={12} />
+                <span>Reset</span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Popular Ticker Quick Selector Bar */}
-        <div style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginRight: '4px' }}>
-            Quick Select:
-          </span>
-          {POPULAR_SYMBOLS.map((sym) => {
-            const isSel = sym.toUpperCase() === selectedSymbol.toUpperCase();
-            const cleanSym = sym.replace('NSE:', '');
-            return (
-              <button
-                key={sym}
-                onClick={() => handleSelectSymbol(sym)}
-                className={`quick-select-chip ${isSel ? 'quick-select-chip--active' : ''}`}
-                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <CompanyLogo symbol={cleanSym} size={18} />
-                {cleanSym}
-              </button>
-            );
-          })}
+        {/* Quick Select Ticker Bar + YouTube-style Live Search Dropdown */}
+        <div style={{ marginBottom: '18px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginRight: '4px' }}>
+              Institutional Watchlist:
+            </span>
+            {POPULAR_SYMBOLS.map((sym) => {
+              const isSel = sym.toUpperCase() === selectedSymbol.toUpperCase();
+              const cleanSym = sym.replace('NSE:', '');
+              return (
+                <button
+                  key={sym}
+                  onClick={() => handleSelectSymbol(sym)}
+                  className={`quick-select-chip ${isSel ? 'quick-select-chip--active' : ''}`}
+                  style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <CompanyLogo symbol={cleanSym} size={18} />
+                  <span>{cleanSym}</span>
+                </button>
+              );
+            })}
+          </div>
 
-          {/* Search/Custom input */}
-          <form onSubmit={handleCustomSymbolSubmit} style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 'auto' }}>
-            <div style={{ position: 'relative' }}>
-              <Search size={13} className="input-icon" />
-              <input
-                type="text"
-                value={customInput}
-                onChange={(e) => setCustomInput(e.target.value)}
-                placeholder="Symbol (e.g. INFY)"
-                className="input input--with-icon"
-                style={{ width: '170px', padding: '6px 10px 6px 32px', fontSize: '12px' }}
-              />
-            </div>
-          </form>
+          {/* YouTube-Style Autocomplete Search Container */}
+          <div
+            ref={searchContainerRef}
+            style={{
+              position: 'relative',
+              marginLeft: 'auto',
+              minWidth: '280px',
+            }}
+          >
+            <form onSubmit={handleCustomSymbolSubmit} style={{ display: 'flex', width: '100%' }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <Search size={14} className="input-icon" style={{ color: 'var(--accent-bright)' }} />
+                <input
+                  id="trade-stock-search-input"
+                  data-testid="stock-search"
+                  type="text"
+                  autoComplete="off"
+                  value={customInput}
+                  onChange={(e) => {
+                    setCustomInput(e.target.value);
+                    setDropdownDismissed(false);
+                    setActiveSuggestionIndex(-1);
+                    if (!isSearchFocused) setIsSearchFocused(true);
+                  }}
+                  onFocus={() => {
+                    setIsSearchFocused(true);
+                    setDropdownDismissed(false);
+                  }}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder="Search stock e.g. 'tat' (Tata Motors, Tata Steel)..."
+                  className="input input--with-icon"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px 8px 36px',
+                    fontSize: '12.5px',
+                    borderRadius: showDropdown ? 'var(--radius-sm) var(--radius-sm) 0 0' : 'var(--radius-sm)',
+                    borderColor: showDropdown ? 'var(--accent)' : 'var(--border)',
+                    boxShadow: showDropdown ? '0 0 12px rgba(59, 130, 246, 0.3)' : 'none',
+                  }}
+                />
+              </div>
+            </form>
+
+            {/* Floating YouTube-style Typeahead Dropdown */}
+            {showDropdown && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  width: '380px',
+                  maxHeight: '360px',
+                  overflowY: 'auto',
+                  backgroundColor: 'var(--surface-elevated, #0d121f)',
+                  border: '1px solid rgba(59, 130, 246, 0.35)',
+                  borderTop: 'none',
+                  borderRadius: '0 0 var(--radius-md) var(--radius-md)',
+                  boxShadow: '0 16px 36px -4px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(59, 130, 246, 0.2)',
+                  zIndex: 9999,
+                  backdropFilter: 'blur(20px)',
+                }}
+              >
+                <div
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'var(--text-muted)',
+                    borderBottom: '1px solid var(--border-subtle)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <span>Matches ({suggestions.length})</span>
+                  <span>Use &uarr; &darr; arrow keys &amp; Enter</span>
+                </div>
+
+                {suggestions.map((item, idx) => {
+                  const isActive = idx === activeSuggestionIndex;
+                  const itemPositive = (item.change ?? 0) >= 0;
+
+                  return (
+                    <div
+                      key={item.symbol}
+                      onClick={() => handleSelectSymbol(item.symbol)}
+                      onMouseEnter={() => setActiveSuggestionIndex(idx)}
+                      style={{
+                        padding: '10px 14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        cursor: 'pointer',
+                        backgroundColor: isActive ? 'rgba(59, 130, 246, 0.16)' : 'transparent',
+                        borderLeft: isActive ? '3px solid var(--accent)' : '3px solid transparent',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        transition: 'background-color 0.1s ease',
+                      }}
+                    >
+                      {/* Logo + Ticker + Name */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <CompanyLogo symbol={item.symbol.replace('NSE:', '')} size={28} />
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              <HighlightMatch text={item.symbol.replace('NSE:', '')} query={customInput} />
+                            </span>
+                            <span className="badge badge--accent badge--sm" style={{ fontSize: '9.5px', padding: '1px 5px' }}>
+                              NSE
+                            </span>
+                          </div>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              color: 'var(--text-secondary)',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              maxWidth: '170px',
+                            }}
+                          >
+                            <HighlightMatch text={item.name} query={customInput} />
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* LTP & Change */}
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div className="num-tabular" style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                          ₹{formatIndianNumber(item.ltp)}
+                        </div>
+                        <div
+                          className={`num-tabular ${itemPositive ? 'text-positive' : 'text-negative'}`}
+                          style={{ fontSize: '11px', fontWeight: 600 }}
+                        >
+                          {itemPositive ? '+' : ''}{item.changePercent?.toFixed(2)}%
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* 2-Column Terminal Layout: Order Ticket on Left, Position & History on Right */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 420px) 1fr', gap: '20px', alignItems: 'start' }}>
+        {/* 2-Column Terminal Layout: Upgraded Order Ticket on Left, Position & Audit Log on Right */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(360px, 440px) 1fr', gap: '20px', alignItems: 'start' }}>
           {/* Order Ticket Card */}
-          <div className="card card-padded">
+          <div
+            className="card card-padded"
+            style={{
+              transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+              boxShadow: isSuccessGlow
+                ? orderType === 'BUY'
+                  ? '0 0 35px rgba(16, 185, 129, 0.45), 0 0 0 2px var(--positive)'
+                  : '0 0 35px rgba(244, 63, 94, 0.45), 0 0 0 2px var(--negative)'
+                : 'var(--shadow-md)',
+            }}
+          >
             {/* Live Ticker Header */}
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                marginBottom: '18px',
+                marginBottom: '16px',
                 paddingBottom: '14px',
                 borderBottom: '1px solid var(--border)',
               }}
@@ -247,13 +632,13 @@ export default function TradePage() {
             </div>
 
             {/* Order Type Switcher (BUY vs SELL) */}
-            <div className="order-type-switcher" style={{ marginBottom: '16px' }}>
+            <div className="order-type-switcher" style={{ marginBottom: '14px' }}>
               <button
                 type="button"
                 onClick={() => setOrderType('BUY')}
                 className={`order-type-btn ${orderType === 'BUY' ? 'order-type-btn--buy' : ''}`}
               >
-                <TrendingUp size={13} />
+                <TrendingUp size={14} />
                 <span>BUY / LONG</span>
               </button>
               <button
@@ -261,52 +646,139 @@ export default function TradePage() {
                 onClick={() => setOrderType('SELL')}
                 className={`order-type-btn ${orderType === 'SELL' ? 'order-type-btn--sell' : ''}`}
               >
-                <TrendingDown size={13} />
+                <TrendingDown size={14} />
                 <span>SELL / EXIT</span>
               </button>
             </div>
 
-            {/* Product Type & Order Type Badges */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              <div
-                style={{
-                  flex: 1,
-                  padding: '8px 10px',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Product</div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
-                  Delivery (CNC)
-                </div>
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  padding: '8px 10px',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Execution</div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
-                  Market (LTP)
-                </div>
+            {/* Product Type Selector: Delivery (CNC) vs Intraday (MIS 5x) */}
+            <div style={{ marginBottom: '14px' }}>
+              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Product Type</span>
+                <span style={{ fontSize: '11px', color: productType === 'MIS' ? 'var(--accent-bright)' : 'var(--text-muted)' }}>
+                  {productType === 'MIS' ? '5x Margin Applied' : 'Cash CNC 1x'}
+                </span>
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setProductType('CNC')}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: productType === 'CNC' ? 'rgba(59, 130, 246, 0.16)' : 'var(--surface)',
+                    border: `1px solid ${productType === 'CNC' ? 'var(--accent)' : 'var(--border)'}`,
+                    color: productType === 'CNC' ? 'var(--accent-bright)' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 700 }}>Delivery (CNC)</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '2px' }}>1x Capital • Hold Overnight</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setProductType('MIS')}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: productType === 'MIS' ? 'rgba(16, 185, 129, 0.16)' : 'var(--surface)',
+                    border: `1px solid ${productType === 'MIS' ? 'var(--positive)' : 'var(--border)'}`,
+                    color: productType === 'MIS' ? 'var(--positive)' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ fontSize: '12px', fontWeight: 700 }}>Intraday (MIS)</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '2px' }}>5x Leverage • Square-off 3:15 PM</div>
+                </button>
               </div>
             </div>
 
+            {/* Execution Order Type: Market vs Limit */}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setExecutionType('MARKET')}
+                  style={{
+                    padding: '7px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: executionType === 'MARKET' ? 'rgba(255, 255, 255, 0.08)' : 'var(--surface)',
+                    border: `1px solid ${executionType === 'MARKET' ? 'var(--text-primary)' : 'var(--border)'}`,
+                    color: 'var(--text-primary)',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Market (LTP)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExecutionType('LIMIT')}
+                  style={{
+                    padding: '7px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: executionType === 'LIMIT' ? 'rgba(255, 255, 255, 0.08)' : 'var(--surface)',
+                    border: `1px solid ${executionType === 'LIMIT' ? 'var(--text-primary)' : 'var(--border)'}`,
+                    color: 'var(--text-primary)',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Limit Price
+                </button>
+              </div>
+
+              {executionType === 'LIMIT' && (
+                <div style={{ marginTop: '6px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      backgroundColor: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-sm)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div style={{ padding: '0 12px', color: 'var(--text-muted)', fontSize: '12px' }}>₹</div>
+                    <input
+                      type="number"
+                      step="0.05"
+                      value={limitPrice}
+                      onChange={(e) => setLimitPrice(e.target.value)}
+                      placeholder="Limit execution price"
+                      className="num-tabular"
+                      style={{
+                        flex: 1,
+                        padding: '8px 10px',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-primary)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Quantity Input */}
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <label className="form-label" style={{ marginBottom: 0 }}>Quantity (Shares)</label>
                 {currentPosition && (
-                  <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600 }}>
-                    Owned: {currentPosition.quantity}
+                  <span style={{ fontSize: '11px', color: 'var(--accent-bright)', fontWeight: 600 }}>
+                    Owned: {currentPosition.quantity} shares
                   </span>
                 )}
               </div>
@@ -330,17 +802,17 @@ export default function TradePage() {
                   className="num-tabular"
                   style={{
                     flex: 1,
-                    padding: '10px 12px',
+                    padding: '9px 12px',
                     background: 'none',
                     border: 'none',
                     color: 'var(--text-primary)',
                     fontSize: '15px',
-                    fontWeight: 600,
+                    fontWeight: 700,
                     outline: 'none',
                   }}
                 />
-                <div style={{ padding: '0 14px', color: 'var(--text-muted)', fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.04em' }}>
-                  QTY
+                <div style={{ padding: '0 14px', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em' }}>
+                  SHARES
                 </div>
               </div>
 
@@ -357,63 +829,104 @@ export default function TradePage() {
                   </button>
                 ))}
               </div>
+
+              {/* Capital Allocation % Chips (Calculates max affordable shares) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+                <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600 }}>Capital %:</span>
+                {[25, 50, 75, 100].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => handleSetAllocation(pct)}
+                    style={{
+                      padding: '3px 8px',
+                      fontSize: '10.5px',
+                      fontWeight: 600,
+                      borderRadius: 'var(--radius-xs)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {pct === 100 ? 'MAX 100%' : `${pct}%`}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Cost Breakdown */}
+            {/* Institutional Margin & Cost Calculation Card */}
             <div
               style={{
                 backgroundColor: 'var(--surface)',
                 borderRadius: 'var(--radius-sm)',
                 padding: '14px',
                 border: '1px solid var(--border)',
-                marginBottom: '16px',
+                marginBottom: '14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12.5px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Est. Execution Price</span>
-                <span className="num-tabular" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(ltp)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Execution Price</span>
+                <span className="num-tabular" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(effectivePrice)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12.5px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Required Capital</span>
-                <span className="num-tabular" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(orderTotal)}</span>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Gross Order Value</span>
+                <span className="num-tabular" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(grossValue)}</span>
               </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600 }}>
+                <span style={{ color: 'var(--accent-bright)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  Margin Required ({productType === 'MIS' ? '5x Leverage' : '1x Delivery'})
+                </span>
+                <span className="num-tabular" style={{ color: 'var(--accent-bright)', fontSize: '13.5px' }}>
+                  ₹{formatIndianNumber(requiredMargin)}
+                </span>
+              </div>
+
               <div
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  fontSize: '12.5px',
-                  paddingTop: '8px',
+                  fontSize: '12px',
+                  paddingTop: '6px',
                   borderTop: '1px solid var(--border-subtle)',
                 }}
               >
-                <span style={{ color: 'var(--text-secondary)' }}>Available Cash Post-Trade</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Cash Post-Trade</span>
                 <span
                   className={`num-tabular ${
                     orderType === 'BUY'
-                      ? cashBalance - orderTotal >= 0
+                      ? cashBalance - requiredMargin >= 0
                         ? 'text-positive'
                         : 'text-negative'
                       : 'text-positive'
                   }`}
                   style={{ fontWeight: 600 }}
                 >
-                  ₹{formatIndianNumber(orderType === 'BUY' ? cashBalance - orderTotal : cashBalance + orderTotal)}
+                  ₹{formatIndianNumber(orderType === 'BUY' ? cashBalance - requiredMargin : cashBalance + requiredMargin)}
                 </span>
               </div>
             </div>
 
-            {/* Error / Validation Warning */}
-            {orderType === 'BUY' && cashBalance < orderTotal && (
+            {/* Error / Insufficient Funds Alert */}
+            {orderType === 'BUY' && cashBalance < requiredMargin && (
               <div className="alert-box alert-box--error" style={{ marginBottom: '14px' }}>
                 <AlertCircle size={14} />
-                <span>Insufficient virtual cash balance for this order.</span>
+                <span>
+                  Insufficient cash balance. Need ₹{formatIndianNumber(requiredMargin)} (Available: ₹{formatIndianNumber(cashBalance)}). Click <strong>+₹1L</strong> above to inject capital.
+                </span>
               </div>
             )}
 
             {orderType === 'SELL' && (!currentPosition || currentPosition.quantity < quantity) && (
               <div className="alert-box alert-box--error" style={{ marginBottom: '14px' }}>
                 <AlertCircle size={14} />
-                <span>You hold {currentPosition?.quantity || 0} shares of {selectedSymbol}.</span>
+                <span>You hold {currentPosition?.quantity || 0} shares of {selectedSymbol}. Sell order exceeds available inventory.</span>
               </div>
             )}
 
@@ -426,42 +939,43 @@ export default function TradePage() {
               style={{
                 width: '100%',
                 padding: '12px',
-                fontSize: '13.5px',
+                fontSize: '14px',
+                fontWeight: 700,
                 letterSpacing: '0.01em',
               }}
             >
               {executeMutation.isPending ? (
-                <span>Submitting Simulated Order...</span>
+                <span>Executing Simulated Fill...</span>
               ) : (
                 <>
-                  <Zap size={15} />
+                  <Zap size={16} />
                   <span>
-                    Execute {orderType} Order • ₹{formatIndianNumber(orderTotal)}
+                    Execute {orderType} Order • ₹{formatIndianNumber(requiredMargin)}
                   </span>
                 </>
               )}
             </button>
 
-            {/* Simulated note */}
+            {/* Zero Brokerage & Execution Slip Callout */}
             <div
               style={{
-                marginTop: '14px',
+                marginTop: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
                 color: 'var(--text-muted)',
-                fontSize: '11px',
+                fontSize: '10.5px',
               }}
             >
-              <ShieldCheck size={13} color="var(--accent)" />
-              <span>Simulated Execution • Live Upstox Data • No Capital Risk</span>
+              <ShieldCheck size={13} color="var(--positive)" />
+              <span>Zero Brokerage • STT Exempt (Simulated) • Live Matching Engine</span>
             </div>
           </div>
 
           {/* Right Column: Active Position Card & Order History Table */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Active Position for this symbol if held */}
+            {/* Active Position Card */}
             {currentPosition && (
               <div
                 className="card card-padded"
@@ -512,7 +1026,7 @@ export default function TradePage() {
               </div>
             )}
 
-            {/* Order History Table */}
+            {/* Order Audit Log Table */}
             <div className="card" style={{ overflow: 'hidden' }}>
               <div
                 style={{
@@ -543,7 +1057,7 @@ export default function TradePage() {
                 <div className="empty-state">
                   <div className="empty-state-title">No executed paper orders yet</div>
                   <div className="empty-state-description">
-                    Use the order ticket on the left to submit simulated trades against live quotes.
+                    Submit an order with the ticket on the left to start building your simulated portfolio.
                   </div>
                 </div>
               ) : (

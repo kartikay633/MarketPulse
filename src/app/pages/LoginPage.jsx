@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { Mail, Lock, ArrowRight, Loader2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, loginWithGoogle, loginAsDemo } = useAuthStore();
+  const { login, loginWithGoogle } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,12 +48,6 @@ export default function LoginPage() {
       setIsGoogleSubmitting(false);
       toast.error('Google sign-in error: ' + err.message);
     }
-  };
-
-  const handleDemoSignIn = () => {
-    loginAsDemo();
-    toast.success('Signed in with Demo Trader account (₹10,00,000 capital)');
-    navigate('/dashboard');
   };
 
   return (
@@ -158,19 +152,6 @@ export default function LoginPage() {
           )}
         </button>
       </form>
-
-      {/* Instant Demo Access Button */}
-      <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={handleDemoSignIn}
-          style={{ width: '100%', justifyContent: 'center' }}
-        >
-          <ShieldCheck size={14} color="var(--positive)" />
-          <span>Quick Demo Access (Instant ₹10L Paper Account)</span>
-        </button>
-      </div>
 
       {/* Switch to Signup */}
       <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '12.5px', color: 'var(--text-muted)' }}>

@@ -2,7 +2,7 @@
 // Institutional Terminal Styling — Exact Market Pulse Design System
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePortfolio } from '../hooks/useTrade';
+import { usePortfolio, useResetPortfolio, useAddFunds } from '../hooks/useTrade';
 import {
   TrendingUp,
   TrendingDown,
@@ -11,6 +11,8 @@ import {
   Zap,
   RefreshCw,
   BarChart3,
+  PlusCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { formatIndianNumber } from '../utils/formatters';
 import ErrorBoundary from '../components/common/ErrorBoundary';
@@ -20,6 +22,8 @@ import CompanyLogo from '../components/common/CompanyLogo';
 export default function PortfolioPage() {
   const navigate = useNavigate();
   const { data: portfolio, isLoading, refetch } = usePortfolio();
+  const resetMutation = useResetPortfolio();
+  const addFundsMutation = useAddFunds();
 
   const account = portfolio?.account || {
     cashBalance: 1000000, totalInvested: 0, totalCurrentValue: 0,
@@ -49,11 +53,40 @@ export default function PortfolioPage() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button className="btn btn-ghost" onClick={() => refetch()}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => addFundsMutation.mutate(100000)}
+              disabled={addFundsMutation.isPending}
+              className="btn btn-secondary"
+              style={{ padding: '6px 12px', fontSize: '12px', gap: '5px' }}
+              title="Add ₹1,00,000 to virtual cash balance"
+            >
+              <PlusCircle size={13} color="var(--positive)" />
+              <span>+₹1L Cash</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Reset virtual portfolio to initial ₹10,00,000 capital and close paper holdings?')) {
+                  resetMutation.mutate();
+                }
+              }}
+              disabled={resetMutation.isPending}
+              className="btn btn-ghost"
+              style={{ padding: '6px 10px', fontSize: '12px', gap: '4px', color: 'var(--text-muted)' }}
+              title="Reset portfolio to ₹10,00,000"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+
+            <button className="btn btn-ghost" onClick={() => refetch()} style={{ padding: '6px 10px' }}>
               <RefreshCw size={13} />
               <span>Refresh</span>
             </button>
+
             <button className="btn btn-primary" onClick={() => navigate('/trade')}>
               <Zap size={13} />
               <span>Simulate Order</span>

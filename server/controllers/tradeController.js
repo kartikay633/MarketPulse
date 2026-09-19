@@ -43,6 +43,17 @@ export class TradeController {
       next(err);
     }
   }
+
+  async addFunds(req, res, next) {
+    try {
+      const userId = req.userId || 'demo-trader';
+      const { amount } = req.body;
+      const result = await tradeService.addFunds(userId, amount);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const tradeController = new TradeController();

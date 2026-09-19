@@ -11,4 +11,7 @@ router.get('/', optionalAuth, (req, res, next) => tradeController.getPortfolio(r
 // POST /api/portfolio/reset — Reset paper trading portfolio to ₹10,00,000
 router.post('/reset', optionalAuth, (req, res, next) => tradeController.resetPortfolio(req, res, next));
 
+// POST /api/portfolio/add-funds — Add simulated virtual funds
+router.post('/add-funds', optionalAuth, (req, res, next) => tradeController.addFunds(req, res, next));
+
 export default router;

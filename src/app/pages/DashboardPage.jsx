@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useMarketOverview, useGainers, useLosers, useActive } from '../hooks/useMarketData';
 import { useMarketNews } from '../hooks/useNews';
+import { usePortfolio, useResetPortfolio, useAddFunds } from '../hooks/useTrade';
 import IndexCard from '../components/market/IndexCard';
 import MarketBreadthBar from '../components/market/MarketBreadthBar';
 import SectorBar from '../components/market/SectorBar';
@@ -29,6 +30,8 @@ import {
   ArrowUpRight,
   ExternalLink,
   Layers,
+  PlusCircle,
+  RotateCcw,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -42,12 +45,21 @@ export default function DashboardPage() {
   const { data: active = [], isLoading: isActiveLoading } = useActive(15);
   const { data: marketNews = [] } = useMarketNews('all', 6);
 
+  // Live Simulated Capital Queries & Mutations
+  const { data: portfolioData, refetch: refetchPortfolio } = usePortfolio();
+  const resetMutation = useResetPortfolio();
+  const addFundsMutation = useAddFunds();
+
+  const cashBalance = portfolioData?.account?.cashBalance ?? 1000000;
+  const portfolioTotalValue = portfolioData?.account?.portfolioTotalValue ?? cashBalance;
+
   const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Trader';
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const handleRefresh = () => {
     setIsRefreshing(true);
     refetchOverview();
+    refetchPortfolio();
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
@@ -194,7 +206,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+            {/* Live Virtual Capital Console */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -219,13 +232,38 @@ export default function DashboardPage() {
                 <Wallet size={16} color="var(--accent-bright)" />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-                  Simulated Capital
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                  Available Cash
                 </span>
                 <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--positive)', fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em' }}>
-                  {formatINR(1000000)}
+                  ₹{formatIndianNumber(cashBalance)}
                 </span>
               </div>
+
+              {/* Quick Add Funds in Header */}
+              <button
+                type="button"
+                onClick={() => addFundsMutation.mutate(100000)}
+                disabled={addFundsMutation.isPending}
+                title="Add ₹1L virtual trading cash"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  padding: '4px 8px',
+                  borderRadius: 'var(--radius-xs)',
+                  backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                  color: 'var(--positive)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  marginLeft: '4px',
+                }}
+              >
+                <PlusCircle size={11} />
+                <span>+₹1L</span>
+              </button>
             </div>
 
             <button
@@ -322,7 +360,107 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Hero Indices Grid */}
+        {/* ========================================================================= */}
+        {/* EXECUTIVE INTELLIGENCE & BREAKING MARKET WIRE (PROMINENT TOP SECTION)      */}
+        {/* ========================================================================= */}
+        <section>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={16} color="var(--accent-bright)" />
+              <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.02em', margin: 0 }}>
+                Pulse AI Intelligence &amp; Breaking Market Wire
+              </h2>
+            </div>
+            <span className="badge badge--accent" style={{ fontSize: '10.5px' }}>
+              FLAGSHIP REAL-TIME DECK
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: '16px', alignItems: 'start' }}>
+            {/* Left: Pulse AI Post-Market Intelligence Suite (Last Day Wrap, Overnight Feed, Pivots) */}
+            <div>
+              <AISummaryCard />
+            </div>
+
+            {/* Right: Breaking Market Wire */}
+            <div className="card card-padded" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Newspaper size={15} color="var(--accent-bright)" />
+                  <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>Breaking Market Wire</span>
+                </div>
+                <Link to="/news" style={{ fontSize: '11.5px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
+                  All 30+ Disclosures &rarr;
+                </Link>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {marketNews.length > 0 ? (
+                  marketNews.slice(0, 5).map((article) => (
+                    <a
+                      key={article.id}
+                      href={article.sourceUrl || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="card--interactive"
+                      style={{
+                        padding: '10px 12px',
+                        backgroundColor: 'var(--surface)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border-subtle)',
+                        textDecoration: 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '5px',
+                        transition: 'all var(--transition-fast)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--accent-bright)' }}>
+                            {article.source}
+                          </span>
+                          <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>•</span>
+                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                            {new Date(article.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <span
+                          className={`badge ${
+                            article.sentiment === 'positive' ? 'badge--positive' :
+                            article.sentiment === 'negative' ? 'badge--negative' :
+                            'badge--neutral'
+                          }`}
+                          style={{ fontSize: '9.5px', padding: '1px 6px', textTransform: 'uppercase' }}
+                        >
+                          {article.sentiment || 'neutral'}
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '12.5px', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                        {article.title}
+                      </div>
+
+                      {article.relatedSymbols && article.relatedSymbols.length > 0 && (
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
+                          {article.relatedSymbols.slice(0, 2).map(sym => (
+                            <span key={sym} style={{ fontSize: '10px', color: 'var(--accent)', backgroundColor: 'rgba(59, 130, 246, 0.1)', padding: '1px 5px', borderRadius: '3px' }}>
+                              #{sym.replace('NSE:', '')}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </a>
+                  ))
+                ) : (
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', padding: '10px' }}>Loading financial news feed...</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Benchmark Indices Grid */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
             <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.02em', margin: 0 }}>
@@ -354,7 +492,7 @@ export default function DashboardPage() {
           {overview?.breadth && <MarketBreadthBar breadth={overview.breadth} />}
         </section>
 
-        {/* Two-Column Terminal Layout */}
+        {/* Two-Column Terminal Layout: Movers on Left, Sector Rotation on Right */}
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.45fr) minmax(0, 1fr)', gap: '16px', alignItems: 'start' }}>
           {/* Left Column: Intraday Market Movers & Institutional Activity */}
           <div className="card card-padded" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -547,88 +685,42 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right Column: Sector Rotation, Intelligence Briefing & News Wire */}
+          {/* Right Column: Sector Rotation & Screener Card */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Sector Performance Rotation */}
             {overview?.sectors && <SectorBar sectors={overview.sectors} />}
 
-            {/* Pulse AI Daily Intelligence Briefing */}
-            <AISummaryCard />
-
-            {/* Financial News Wire Widget */}
-            <div className="card card-padded" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px' }}>
+            {/* Quick Institutional Screener Callout */}
+            <div 
+              className="card card-padded"
+              style={{
+                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(14, 165, 233, 0.03) 100%), var(--surface)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Newspaper size={15} color="var(--accent-bright)" />
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Breaking Market Wire</span>
+                  <BarChart3 size={15} color="var(--accent-bright)" />
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Sector Heatmap &amp; Treemap
+                  </span>
                 </div>
-                <Link to="/news" style={{ fontSize: '11.5px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
-                  All 20+ Disclosures &rarr;
-                </Link>
+                <span className="badge badge--accent" style={{ fontSize: '9.5px' }}>INTERACTIVE</span>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {marketNews.length > 0 ? (
-                  marketNews.slice(0, 5).map((article) => (
-                    <a
-                      key={article.id}
-                      href={article.sourceUrl || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="card--interactive"
-                      style={{
-                        padding: '10px 12px',
-                        backgroundColor: 'var(--surface)',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-subtle)',
-                        textDecoration: 'none',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '5px',
-                        transition: 'all var(--transition-fast)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--accent-bright)' }}>
-                            {article.source}
-                          </span>
-                          <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>•</span>
-                          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                            {new Date(article.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <span
-                          className={`badge ${
-                            article.sentiment === 'positive' ? 'badge--positive' :
-                            article.sentiment === 'negative' ? 'badge--negative' :
-                            'badge--neutral'
-                          }`}
-                          style={{ fontSize: '9.5px', padding: '1px 6px', textTransform: 'uppercase' }}
-                        >
-                          {article.sentiment || 'neutral'}
-                        </span>
-                      </div>
-
-                      <div style={{ fontSize: '12.5px', fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4 }}>
-                        {article.title}
-                      </div>
-
-                      {article.relatedSymbols && article.relatedSymbols.length > 0 && (
-                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '2px' }}>
-                          {article.relatedSymbols.slice(0, 2).map(sym => (
-                            <span key={sym} style={{ fontSize: '10px', color: 'var(--accent)', backgroundColor: 'rgba(59, 130, 246, 0.1)', padding: '1px 5px', borderRadius: '3px' }}>
-                              #{sym.replace('NSE:', '')}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </a>
-                  ))
-                ) : (
-                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', padding: '10px' }}>Loading financial news feed...</div>
-                )}
-              </div>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                Visualize relative performance across Banking, IT, Energy, Auto, and Pharma sectors with size proportional to market capitalization.
+              </p>
+              <Link
+                to="/markets"
+                className="btn btn-secondary"
+                style={{ padding: '8px 12px', fontSize: '12px', alignSelf: 'flex-start', marginTop: '4px', gap: '6px' }}
+              >
+                <span>Open Market Treemap</span>
+                <ArrowRight size={13} />
+              </Link>
             </div>
           </div>
         </div>

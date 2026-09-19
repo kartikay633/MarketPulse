@@ -204,6 +204,21 @@ export class TradeService {
       positions: [],
     };
   }
+
+  async addFunds(userId, amount) {
+    const amt = parseFloat(amount);
+    if (isNaN(amt) || amt <= 0) {
+      throw new Error('Amount must be a positive number');
+    }
+    const res = await this.repository.addFunds(userId, amt);
+    logger.info({ userId, amt, newBalance: res.cashBalance }, 'Added simulated virtual funds to paper account');
+    return {
+      message: `Successfully added ₹${amt.toLocaleString('en-IN')} to virtual capital`,
+      account: {
+        cashBalance: res.cashBalance,
+      },
+    };
+  }
 }
 
 export const tradeService = new TradeService();

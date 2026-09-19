@@ -46,3 +46,39 @@ export function useExecuteTrade() {
     },
   });
 }
+
+export function useResetPortfolio() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const res = await api.post('/portfolio/reset');
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      queryClient.invalidateQueries({ queryKey: ['trade', 'orders'] });
+      toast.success(data.message || 'Simulated capital reset to ₹10,00,000');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.error || 'Failed to reset portfolio');
+    },
+  });
+}
+
+export function useAddFunds() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (amount) => {
+      const res = await api.post('/portfolio/add-funds', { amount });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      toast.success(data.message || 'Simulated capital updated');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.error || 'Failed to add simulated funds');
+    },
+  });
+}
+

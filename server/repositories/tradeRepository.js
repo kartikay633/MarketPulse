@@ -198,6 +198,13 @@ export class TradeRepository {
     memoryPositions.delete(userId);
     return { userId, cashBalance: 1000000.00 };
   }
+
+  async addFunds(userId, amount) {
+    const account = await this.getAccount(userId);
+    const newBalance = Number((account.cashBalance + amount).toFixed(2));
+    await this.updateAccountBalance(userId, newBalance);
+    return { userId, cashBalance: newBalance };
+  }
 }
 
 export const tradeRepository = new TradeRepository();
