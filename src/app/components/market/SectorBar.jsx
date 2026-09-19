@@ -1,4 +1,4 @@
-// ROADMAP: Section 2 & Phase 2 — Sector Performance Component
+// Flagship Sector Performance Bar — Premium sentiment-colored sector cards
 import React from 'react';
 import { formatPercent } from '../../utils/formatters';
 
@@ -6,67 +6,82 @@ export function SectorBar({ sectors = [] }) {
   if (!sectors || sectors.length === 0) return null;
 
   return (
-    <div
-      style={{
-        padding: '20px',
-        borderRadius: '14px',
-        backgroundColor: '#12121a',
-        border: '1px solid #1e1e30',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '14px',
-      }}
-    >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#f0f0f5' }}>Sectoral Performance</h3>
-        <span style={{ fontSize: '11px', color: '#606078' }}>NSE Indices</span>
+        <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
+          Sectoral Performance
+        </h3>
+        <span style={{ fontSize: '10.5px', color: 'var(--text-dim)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          NSE Sector Indices
+        </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '8px' }}>
         {sectors.map((sec) => {
           const isPos = sec.changePercent >= 0;
-          const color = isPos ? '#00c853' : '#ff1744';
-          const bgBar = isPos ? 'rgba(0, 200, 83, 0.15)' : 'rgba(255, 23, 68, 0.15)';
           const barWidth = Math.min(Math.abs(sec.changePercent) * 25, 100);
 
           return (
             <div
               key={sec.name}
               style={{
-                padding: '10px 12px',
-                borderRadius: '8px',
-                backgroundColor: '#161622',
-                border: '1px solid #1e1e30',
+                padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                background: isPos
+                  ? 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(255,255,255,0.01) 100%)'
+                  : 'linear-gradient(135deg, rgba(244,63,94,0.08) 0%, rgba(255,255,255,0.01) 100%)',
+                border: isPos
+                  ? '1px solid rgba(16,185,129,0.20)'
+                  : '1px solid rgba(244,63,94,0.20)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '6px',
+                gap: '8px',
+                transition: 'all var(--transition-fast)',
+                cursor: 'default',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = '';
+                e.currentTarget.style.boxShadow = '';
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', fontWeight: 500, color: '#f0f0f5' }}>{sec.name}</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color }}>
-                  {formatPercent(sec.changePercent)}
+                <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {sec.name}
+                </span>
+                <span
+                  className="num-tabular"
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: isPos ? 'var(--positive-text)' : 'var(--negative-text)',
+                    padding: '1px 6px',
+                    borderRadius: 'var(--radius-xs)',
+                    backgroundColor: isPos ? 'rgba(16,185,129,0.10)' : 'rgba(244,63,94,0.10)',
+                  }}
+                >
+                  {isPos ? '+' : ''}{formatPercent(sec.changePercent)}
                 </span>
               </div>
-              <div
-                style={{
-                  width: '100%',
-                  height: '4px',
+
+              {/* Mini Bar Track */}
+              <div style={{
+                width: '100%', height: '3px', borderRadius: '2px',
+                backgroundColor: 'rgba(255,255,255,0.07)', overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${barWidth}%`,
+                  background: isPos
+                    ? 'linear-gradient(90deg, #059669, #10B981)'
+                    : 'linear-gradient(90deg, #E11D48, #F43F5E)',
+                  boxShadow: isPos ? '0 0 6px rgba(16,185,129,0.5)' : '0 0 6px rgba(244,63,94,0.5)',
                   borderRadius: '2px',
-                  backgroundColor: '#222236',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${barWidth}%`,
-                    backgroundColor: color,
-                    borderRadius: '2px',
-                    transition: 'width 0.3s ease',
-                  }}
-                />
+                  transition: 'width 0.4s ease',
+                }} />
               </div>
             </div>
           );

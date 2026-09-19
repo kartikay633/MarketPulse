@@ -1,4 +1,5 @@
 // ROADMAP: Section 5 & 14 — User Profile & Settings Page
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
@@ -8,21 +9,15 @@ import api from '../services/api';
 import {
   Settings,
   User,
-  Shield,
   RotateCcw,
-  Sliders,
-  CheckCircle2,
   LogOut,
-  Bell,
-  Cpu,
-  Database,
-  Radio,
-  ExternalLink,
-  Zap,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { formatIndianNumber } from '../utils/formatters';
 import { toast } from 'sonner';
 import ErrorBoundary from '../components/common/ErrorBoundary';
+import { useThemeStore } from '../stores/themeStore';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -32,8 +27,14 @@ export default function SettingsPage() {
 
   const [defaultChartType, setDefaultChartType] = useState(() => localStorage.getItem('mp_default_chart') || 'Candles');
   const [refreshInterval, setRefreshInterval] = useState(() => localStorage.getItem('mp_refresh_interval') || '15');
-  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('mp_sound_enabled') === 'true');
   const [isResetting, setIsResetting] = useState(false);
+
+  const { theme, setTheme } = useThemeStore();
+
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+    toast.success(`Active theme changed to ${newTheme.toUpperCase()}`);
+  };
 
   const handleChartTypeChange = (type) => {
     setDefaultChartType(type);
@@ -47,15 +48,8 @@ export default function SettingsPage() {
     toast.success(`Data refresh interval updated to ${val}s`);
   };
 
-  const handleToggleSound = () => {
-    const next = !soundEnabled;
-    setSoundEnabled(next);
-    localStorage.setItem('mp_sound_enabled', String(next));
-    toast.info(`Trade sound effects ${next ? 'enabled' : 'disabled'}`);
-  };
-
   const handleResetPortfolio = async () => {
-    if (!window.confirm('Are you sure you want to reset your virtual portfolio? This will restore your virtual balance to ₹10,00,000 and clear your active positions.')) {
+    if (!window.confirm('Are you sure you want to reset your virtual portfolio? This will restore your simulated balance to ₹10,00,000 and clear your active positions.')) {
       return;
     }
 
@@ -83,217 +77,118 @@ export default function SettingsPage() {
 
   return (
     <ErrorBoundary>
-      <div style={{ padding: '28px 36px 64px', maxWidth: '1100px', margin: '0 auto' }}>
+      <div className="page-container-narrow">
         {/* Page Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '28px',
-            paddingBottom: '20px',
-            borderBottom: '1px solid #1c1c2e',
-          }}
-        >
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-            }}
-          >
-            <Settings size={19} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+          <div className="ai-avatar">
+            <Settings size={16} />
           </div>
           <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
-              User Profile & Settings
-            </h1>
-            <p style={{ color: '#8888a6', fontSize: '13.5px', margin: '4px 0 0' }}>
-              Manage your simulated trading account, charting preferences, and API connectivity.
+            <h1 className="page-title">Account & Terminal Settings</h1>
+            <p className="page-subtitle" style={{ margin: '2px 0 0' }}>
+              Simulated capital configuration, chart display preferences, and session controls.
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
-          {/* 1. Profile Information Card */}
-          <div
-            style={{
-              backgroundColor: '#0c0c16',
-              borderRadius: '14px',
-              border: '1px solid #1c1c2e',
-              padding: '24px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-              <User size={18} color="#818cf8" />
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                Trader Profile
-              </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* User Profile Card */}
+          <div className="card card-body">
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>
+              Trader Profile
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px' }}>
-              <div
-                style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
-                  fontWeight: 800,
-                  color: '#ffffff',
-                }}
-              >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), #6366F1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '16px', fontWeight: 600 }}>
                 {displayName.charAt(0).toUpperCase()}
               </div>
-
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>{displayName}</div>
-                <div style={{ fontSize: '13.5px', color: '#8888a6', marginTop: '2px' }}>{email}</div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                      color: '#818cf8',
-                      border: '1px solid rgba(99, 102, 241, 0.3)',
-                    }}
-                  >
-                    PRO SIMULATION TRADER
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: 'rgba(0, 192, 118, 0.15)',
-                      color: '#00c076',
-                      border: '1px solid rgba(0, 192, 118, 0.3)',
-                    }}
-                  >
-                    NSE/BSE LIVE ACCESS
-                  </span>
-                </div>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>{displayName}</div>
+                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{email}</div>
               </div>
+              <span className="badge badge--positive badge--sm" style={{ animation: 'pulseGlow 2s ease-in-out infinite' }}>
+                ACTIVE SESSION
+              </span>
             </div>
           </div>
 
-          {/* 2. Paper Trading Account Controls */}
-          <div
-            style={{
-              backgroundColor: '#0c0c16',
-              borderRadius: '14px',
-              border: '1px solid #1c1c2e',
-              padding: '24px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-              <Zap size={18} color="#00c076" />
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                Virtual Paper Trading Controls
-              </h2>
+          {/* Paper Trading Account Card */}
+          <div className="card card-body">
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>
+              Simulated Capital
             </div>
 
-            <div
-              style={{
-                backgroundColor: '#07070e',
-                borderRadius: '10px',
-                border: '1px solid #181828',
-                padding: '16px 20px',
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px',
-                marginBottom: '16px',
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '12px', color: '#8888a6', fontWeight: 600 }}>CURRENT AVAILABLE CASH</div>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginTop: '2px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ backgroundColor: 'var(--surface)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Available Cash</div>
+                <div className="num-tabular" style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
                   ₹{formatIndianNumber(cashBalance)}
                 </div>
-                <div style={{ fontSize: '12px', color: '#686884', marginTop: '4px' }}>
-                  Base initial provisioning: ₹10,00,000 (10 Lakhs INR)
+              </div>
+              <div style={{ backgroundColor: 'var(--surface)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Default Base Capital</div>
+                <div style={{ fontSize: 'var(--text-lg)', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '2px' }}>
+                  ₹10,00,000
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                Restore your virtual account back to its initial ₹10,00,000 balance and clear paper holdings.
+              </div>
+              <button className="btn btn-danger" onClick={handleResetPortfolio} disabled={isResetting}>
+                <RotateCcw size={12} />
+                <span>{isResetting ? 'Resetting...' : 'Reset Portfolio'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Terminal Preferences */}
+          <div className="card card-body">
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px' }}>
+              Terminal Preferences
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Terminal Theme */}
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">Terminal Color Theme</div>
+                  <div className="settings-description">Toggle between High-Contrast OLED Dark Mode and Institutional Light Mode</div>
+                </div>
+                <div className="settings-toggle-group">
+                  <button
+                    onClick={() => handleThemeChange('dark')}
+                    className={`settings-toggle-btn${theme === 'dark' ? ' settings-toggle-btn--active' : ''}`}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Moon size={13} />
+                    <span>Dark</span>
+                  </button>
+                  <button
+                    onClick={() => handleThemeChange('light')}
+                    className={`settings-toggle-btn${theme === 'light' ? ' settings-toggle-btn--active' : ''}`}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Sun size={13} />
+                    <span>Light</span>
+                  </button>
                 </div>
               </div>
 
-              <button
-                onClick={handleResetPortfolio}
-                disabled={isResetting}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 18px',
-                  borderRadius: '8px',
-                  backgroundColor: 'rgba(255, 59, 87, 0.12)',
-                  border: '1px solid rgba(255, 59, 87, 0.3)',
-                  color: '#ff3b57',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  cursor: isResetting ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <RotateCcw size={15} />
-                <span>{isResetting ? 'Resetting...' : 'Reset Virtual Balance to ₹10L'}</span>
-              </button>
-            </div>
-            <p style={{ color: '#686884', fontSize: '12px', margin: 0 }}>
-              * Resetting your account will wipe existing simulated equity positions and restore available virtual cash to ₹10,00,000.
-            </p>
-          </div>
-
-          {/* 3. Terminal & Charting Preferences */}
-          <div
-            style={{
-              backgroundColor: '#0c0c16',
-              borderRadius: '14px',
-              border: '1px solid #1c1c2e',
-              padding: '24px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-              <Sliders size={18} color="#eab308" />
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                Charting & Terminal Preferences
-              </h2>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
               {/* Default Chart Type */}
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a0a0c0', marginBottom: '8px' }}>
-                  DEFAULT CHART TYPE
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {['Candles', 'Area', 'Line'].map((type) => (
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">Default Chart Style</div>
+                  <div className="settings-description">Select preferred series representation on stock pages</div>
+                </div>
+                <div className="settings-toggle-group">
+                  {['Candles', 'Line', 'Area'].map((type) => (
                     <button
                       key={type}
                       onClick={() => handleChartTypeChange(type)}
-                      style={{
-                        flex: 1,
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        border: defaultChartType === type ? '1px solid #6366f1' : '1px solid #1c1c2e',
-                        backgroundColor: defaultChartType === type ? 'rgba(99, 102, 241, 0.15)' : '#0a0a14',
-                        color: defaultChartType === type ? '#a5b4fc' : '#8888a6',
-                        cursor: 'pointer',
-                      }}
+                      className={`settings-toggle-btn${defaultChartType === type ? ' settings-toggle-btn--active' : ''}`}
                     >
                       {type}
                     </button>
@@ -301,27 +196,18 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Polling Interval */}
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#a0a0c0', marginBottom: '8px' }}>
-                  LIVE TICK REFRESH INTERVAL
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+              {/* Refresh Interval */}
+              <div className="settings-row">
+                <div>
+                  <div className="settings-label">Market Data Polling Rate</div>
+                  <div className="settings-description">Background interval for updating quote telemetry</div>
+                </div>
+                <div className="settings-toggle-group">
                   {['5', '15', '30', '60'].map((sec) => (
                     <button
                       key={sec}
                       onClick={() => handleIntervalChange(sec)}
-                      style={{
-                        flex: 1,
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        border: refreshInterval === sec ? '1px solid #6366f1' : '1px solid #1c1c2e',
-                        backgroundColor: refreshInterval === sec ? 'rgba(99, 102, 241, 0.15)' : '#0a0a14',
-                        color: refreshInterval === sec ? '#a5b4fc' : '#8888a6',
-                        cursor: 'pointer',
-                      }}
+                      className={`settings-toggle-btn${refreshInterval === sec ? ' settings-toggle-btn--active' : ''}`}
                     >
                       {sec}s
                     </button>
@@ -331,97 +217,15 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* 4. Live API Connectivity Diagnostics */}
-          <div
-            style={{
-              backgroundColor: '#0c0c16',
-              borderRadius: '14px',
-              border: '1px solid #1c1c2e',
-              padding: '24px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-              <Cpu size={18} color="#00c076" />
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                Live Data Feeds & Infrastructure
-              </h2>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-              {/* Upstox */}
-              <div style={{ backgroundColor: '#07070e', padding: '14px', borderRadius: '8px', border: '1px solid #181828' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Upstox Market V2</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#00c076', fontWeight: 700 }}>
-                    <CheckCircle2 size={13} /> Active
-                  </span>
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#8888a6' }}>NSE & BSE Tick Stream</div>
-              </div>
-
-              {/* Marketaux */}
-              <div style={{ backgroundColor: '#07070e', padding: '14px', borderRadius: '8px', border: '1px solid #181828' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Marketaux News</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#00c076', fontWeight: 700 }}>
-                    <CheckCircle2 size={13} /> Active
-                  </span>
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#8888a6' }}>Indian Financial Headlines</div>
-              </div>
-
-              {/* Gemini 1.5 Flash */}
-              <div style={{ backgroundColor: '#07070e', padding: '14px', borderRadius: '8px', border: '1px solid #181828' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Pulse AI Assistant</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#00c076', fontWeight: 700 }}>
-                    <CheckCircle2 size={13} /> Active
-                  </span>
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#8888a6' }}>Gemini 1.5 Flash Grounded</div>
-              </div>
-            </div>
-          </div>
-
-          {/* 5. Session & Sign Out */}
-          <div
-            style={{
-              backgroundColor: '#0c0c16',
-              borderRadius: '14px',
-              border: '1px solid #1c1c2e',
-              padding: '24px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
+          {/* Session Termination */}
+          <div className="card card-body" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                End Current Session
-              </h3>
-              <p style={{ color: '#8888a6', fontSize: '12.5px', margin: '4px 0 0' }}>
-                Sign out of Market Pulse terminal on this browser.
-              </p>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Sign Out</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Clear local session token and return to authentication portal</div>
             </div>
-
-            <button
-              onClick={handleLogout}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
-                borderRadius: '8px',
-                backgroundColor: '#18182a',
-                border: '1px solid #282848',
-                color: '#f0f0fa',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
-            >
-              <LogOut size={15} />
-              <span>Sign Out</span>
+            <button className="btn btn-danger" onClick={handleLogout}>
+              <LogOut size={13} />
+              <span>Log Out</span>
             </button>
           </div>
         </div>

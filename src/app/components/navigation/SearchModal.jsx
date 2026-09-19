@@ -1,8 +1,10 @@
 // ROADMAP: Section 5 & 16 — SearchModal Component
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Search, TrendingUp, Clock, X, ArrowRight, CornerDownLeft, Sparkles } from 'lucide-react';
+import { Search, Clock, X, ArrowRight, CornerDownLeft } from 'lucide-react';
+import CompanyLogo from '../common/CompanyLogo';
 
 const RECENT_KEY = 'marketpulse_recent_searches';
 
@@ -14,7 +16,6 @@ export default function SearchModal({ isOpen, onClose }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
-  const listRef = useRef(null);
 
   // Load recent searches on mount / open
   useEffect(() => {
@@ -87,7 +88,6 @@ export default function SearchModal({ isOpen, onClose }) {
   }, [isOpen, results, recentSearches, selectedIndex, query]);
 
   const handleSelect = (item) => {
-    // Save to recents
     try {
       const updated = [
         item,
@@ -116,31 +116,16 @@ export default function SearchModal({ isOpen, onClose }) {
   return (
     <div
       onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(5, 5, 10, 0.82)',
-        backdropFilter: 'blur(10px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        paddingTop: '12vh',
-      }}
+      className="modal-backdrop"
+      style={{ alignItems: 'flex-start', paddingTop: '10vh' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="modal-card"
         style={{
-          width: '100%',
-          maxWidth: '620px',
-          backgroundColor: '#0d0d16',
-          borderRadius: '16px',
-          border: '1px solid #282845',
-          boxShadow: '0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+          maxWidth: '580px',
+          padding: 0,
           overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          animation: 'fadeInScale 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         {/* Search Input Header */}
@@ -148,93 +133,65 @@ export default function SearchModal({ isOpen, onClose }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
-            padding: '16px 20px',
-            borderBottom: '1px solid #1e1e32',
+            gap: '10px',
+            padding: '14px 18px',
+            borderBottom: '1px solid var(--border)',
+            backgroundColor: 'var(--surface)',
           }}
         >
-          <Search size={18} color="#6366f1" />
+          <Search size={16} color="var(--accent)" />
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search stocks by symbol, company, or sector (e.g. RELIANCE, TCS, Banking)..."
+            placeholder="Search equities by ticker, name, or sector (e.g. RELIANCE, TCS)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             style={{
               flex: 1,
-              backgroundColor: 'transparent',
+              background: 'transparent',
               border: 'none',
               outline: 'none',
-              color: '#f0f0fa',
-              fontSize: '15px',
-              fontFamily: 'inherit',
+              color: 'var(--text-primary)',
+              fontSize: '13.5px',
             }}
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#6e6e88',
-                cursor: 'pointer',
-                padding: '4px',
-                display: 'flex',
-                alignItems: 'center',
-              }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
             >
               <X size={15} />
             </button>
           )}
-          <span
-            style={{
-              fontSize: '11px',
-              backgroundColor: '#1b1b2d',
-              color: '#8b8ba8',
-              padding: '3px 7px',
-              borderRadius: '5px',
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
+          <span className="topbar-kbd">
             ESC
           </span>
         </div>
 
         {/* Results List */}
-        <div
-          ref={listRef}
-          style={{
-            maxHeight: '380px',
-            overflowY: 'auto',
-            padding: '10px 8px',
-          }}
-        >
+        <div style={{ maxHeight: '380px', overflowY: 'auto', padding: '6px' }}>
           {!query.trim() && recentSearches.length > 0 && (
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '6px 14px',
+                padding: '8px 12px 6px',
                 fontSize: '11px',
+                color: 'var(--text-muted)',
                 fontWeight: 600,
-                color: '#717192',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.04em',
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Clock size={12} /> Recent Searches
-              </span>
+              <span>Recent Searches</span>
               <button
                 onClick={handleClearRecents}
+                className="btn-ghost"
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#6366f1',
                   fontSize: '11px',
-                  cursor: 'pointer',
-                  padding: 0,
+                  padding: '2px 6px',
+                  color: 'var(--text-muted)',
                 }}
               >
                 Clear
@@ -242,153 +199,93 @@ export default function SearchModal({ isOpen, onClose }) {
             </div>
           )}
 
-          {!query.trim() && recentSearches.length === 0 && (
-            <div
-              style={{
-                padding: '6px 14px',
-                fontSize: '11px',
-                fontWeight: 600,
-                color: '#717192',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-              }}
-            >
-              <TrendingUp size={12} /> Popular Benchmarks & Equities
+          {loading ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>
+              Searching live tickers...
             </div>
-          )}
-
-          {displayList.length === 0 && !loading && (
-            <div
-              style={{
-                padding: '36px 20px',
-                textAlign: 'center',
-                color: '#656580',
-                fontSize: '13px',
-              }}
-            >
-              No stocks found matching "{query}"
+          ) : displayList.length === 0 ? (
+            <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+              {query.trim() ? `No matching tickers found for "${query}"` : 'Type a symbol or company name to search'}
             </div>
-          )}
-
-          {displayList.map((item, idx) => {
-            const isSelected = idx === selectedIndex;
-            return (
-              <div
-                key={item.symbol}
-                onClick={() => handleSelect(item)}
-                onMouseEnter={() => setSelectedIndex(idx)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  backgroundColor: isSelected ? '#1e1e35' : 'transparent',
-                  transition: 'background-color 0.1s ease',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div
-                    style={{
-                      width: '34px',
-                      height: '34px',
-                      borderRadius: '8px',
-                      backgroundColor: isSelected ? '#2a2a4c' : '#141422',
-                      border: '1px solid #27273f',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: isSelected ? '#6366f1' : '#8888aa',
-                      fontWeight: 700,
-                      fontSize: '12px',
-                    }}
-                  >
-                    {item.symbol.includes(':') ? item.symbol.split(':')[1].substring(0, 2) : item.symbol.substring(0, 2)}
-                  </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: 600, color: '#f0f0fa', fontSize: '13.5px' }}>
-                        {item.symbol}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '10px',
-                          padding: '1px 5px',
-                          borderRadius: '4px',
-                          backgroundColor: '#1b1b2d',
-                          color: '#8b8ba8',
-                          fontWeight: 500,
-                        }}
-                      >
-                        {item.exchange || 'NSE'}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#82829e', marginTop: '2px' }}>
-                      {item.name}
+          ) : (
+            displayList.map((item, idx) => {
+              const isSelected = idx === selectedIndex;
+              return (
+                <div
+                  key={item.symbol}
+                  onClick={() => handleSelect(item)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: isSelected ? 'var(--accent-muted)' : 'transparent',
+                    border: isSelected ? '1px solid var(--accent-border)' : '1px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                  }}
+                  onMouseEnter={() => setSelectedIndex(idx)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <CompanyLogo symbol={item.symbol} size={28} />
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {item.symbol}
+                        </span>
+                        <span className="badge badge--sm">
+                          NSE
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                        {item.name || item.description || 'Listed Equity'}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {item.sector && (
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        padding: '3px 8px',
-                        borderRadius: '6px',
-                        backgroundColor: '#141424',
-                        color: '#9e9ebb',
-                        border: '1px solid #222238',
-                      }}
-                    >
-                      {item.sector}
-                    </span>
-                  )}
-                  {isSelected && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '11px',
-                        color: '#6366f1',
-                        fontWeight: 500,
-                      }}
-                    >
-                      Select <CornerDownLeft size={12} />
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {item.ltp !== undefined && (
+                      <div style={{ textAlign: 'right' }}>
+                        <div className="num-tabular" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          ₹{item.ltp}
+                        </div>
+                        {item.changePercent !== undefined && (
+                          <div
+                            className={`num-tabular ${item.changePercent >= 0 ? 'text-positive' : 'text-negative'}`}
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {isSelected && <CornerDownLeft size={13} color="var(--accent)" />}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
-        {/* Footer Shortcut Hints */}
+        {/* Footer */}
         <div
           style={{
-            padding: '10px 18px',
-            borderTop: '1px solid #1c1c2e',
-            backgroundColor: '#090910',
+            padding: '8px 16px',
+            backgroundColor: 'var(--surface)',
+            borderTop: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             fontSize: '11px',
-            color: '#686884',
+            color: 'var(--text-muted)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <span><kbd style={{ background: '#19192b', padding: '2px 5px', borderRadius: '3px', color: '#9d9dbb' }}>↑</kbd> <kbd style={{ background: '#19192b', padding: '2px 5px', borderRadius: '3px', color: '#9d9dbb' }}>↓</kbd> Navigate</span>
-            <span><kbd style={{ background: '#19192b', padding: '2px 5px', borderRadius: '3px', color: '#9d9dbb' }}>↵</kbd> Select</span>
-            <span><kbd style={{ background: '#19192b', padding: '2px 5px', borderRadius: '3px', color: '#9d9dbb' }}>Esc</kbd> Close</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#6366f1' }}>
-            <Sparkles size={12} /> Real-time NSE/BSE
-          </div>
+          <span>Use ↑ and ↓ to navigate, Enter to select</span>
+          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Market Pulse Search</span>
         </div>
       </div>
     </div>

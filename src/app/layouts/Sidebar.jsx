@@ -1,4 +1,4 @@
-// ROADMAP: Section 3 & 5 — Sidebar Navigation Component
+// ROADMAP: Section 3, 5 & Design Refinement — Institutional Terminal Sidebar
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import {
@@ -16,72 +16,36 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Markets', path: '/markets', icon: TrendingUp },
-  { name: 'Watchlist', path: '/watchlist', icon: Bookmark },
-  { name: 'Portfolio', path: '/portfolio', icon: Briefcase },
-  { name: 'Trade Terminal', path: '/trade', icon: CandlestickChart },
-  { name: 'News Pulse', path: '/news', icon: Newspaper },
-  { name: 'Pulse AI', path: '/ai', icon: Bot, badge: 'AI' },
-  { name: 'Price Alerts', path: '/alerts', icon: Bell },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, color: '#3B82F6' },
+  { name: 'Markets', path: '/markets', icon: TrendingUp, color: '#10B981' },
+  { name: 'Watchlist', path: '/watchlist', icon: Bookmark, color: '#F59E0B' },
+  { name: 'Portfolio', path: '/portfolio', icon: Briefcase, color: '#A855F7' },
+  { name: 'Trade Terminal', path: '/trade', icon: CandlestickChart, color: '#06B6D4' },
+  { name: 'News Pulse', path: '/news', icon: Newspaper, color: '#F97316' },
+  { name: 'Pulse AI', path: '/ai', icon: Bot, badge: 'RESEARCH', color: '#3B82F6' },
+  { name: 'Price Alerts', path: '/alerts', icon: Bell, color: '#F43F5E' },
 ];
 
 export function Sidebar() {
   return (
-    <aside
-      style={{
-        width: '240px',
-        height: '100vh',
-        backgroundColor: '#0d0d14',
-        borderRight: '1px solid #1e1e30',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'sticky',
-        top: 0,
-        zIndex: 30,
-        flexShrink: 0,
-      }}
-    >
+    <aside className="sidebar">
       {/* Brand Header */}
-      <div
-        style={{
-          height: '64px',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 20px',
-          gap: '10px',
-          borderBottom: '1px solid #1a1a28',
-        }}
-      >
-        <div
-          style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: 'linear-gradient(135deg, #1e3a8a, #3366ff)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 14px rgba(51, 102, 255, 0.4)',
-            border: '1px solid rgba(51, 102, 255, 0.6)',
-          }}
-        >
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '15px', color: '#fff' }}>M</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '15px', letterSpacing: '0.12em', color: '#f0f0f5' }}>
-            MARKET
-          </span>
-          <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '15px', letterSpacing: '0.12em', color: '#3366ff' }}>
-            PULSE
-          </span>
+      <div className="sidebar-brand">
+        <img
+          src="/official_logo.png"
+          alt="Market Pulse"
+          className="sidebar-brand-logo"
+        />
+        <div className="sidebar-brand-text">
+          <span className="sidebar-brand-market">MARKET</span>
+          <span className="sidebar-brand-pulse">PULSE</span>
         </div>
       </div>
 
       {/* Nav List */}
-      <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
-        <span style={{ fontSize: '10px', fontWeight: 600, color: '#606078', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 10px', marginBottom: '6px' }}>
-          Platform Navigation
+      <nav className="sidebar-nav">
+        <span className="sidebar-section-label">
+          Terminal Cockpit
         </span>
 
         {NAV_ITEMS.map((item) => {
@@ -90,92 +54,73 @@ export function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '9px 12px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? '#ffffff' : '#a0a0b8',
-                backgroundColor: isActive ? 'rgba(51, 102, 255, 0.15)' : 'transparent',
-                border: isActive ? '1px solid rgba(51, 102, 255, 0.3)' : '1px solid transparent',
-                textDecoration: 'none',
-                transition: 'all 0.15s ease',
-              })}
+              className={({ isActive }) =>
+                `sidebar-nav-item${isActive ? ' sidebar-nav-item--active' : ''}`
+              }
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Icon size={16} />
-                <span>{item.name}</span>
-              </div>
-              {item.badge && (
-                <span
-                  style={{
-                    fontSize: '9px',
-                    fontWeight: 700,
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    backgroundColor: 'rgba(51, 102, 255, 0.25)',
-                    color: '#27c8ff',
-                    border: '1px solid rgba(39, 200, 255, 0.4)',
-                  }}
-                >
-                  {item.badge}
-                </span>
+              {({ isActive }) => (
+                <>
+                  <div className="sidebar-nav-item-inner">
+                    <div 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        color: isActive ? item.color : 'inherit',
+                        filter: isActive ? `drop-shadow(0 0 6px ${item.color})` : 'none',
+                        transition: 'all var(--transition-fast)',
+                      }}
+                    >
+                      <Icon size={16} />
+                    </div>
+                    <span style={{ color: isActive ? '#FFFFFF' : 'var(--text-secondary)', fontWeight: isActive ? 600 : 500 }}>
+                      {item.name}
+                    </span>
+                  </div>
+                  {item.badge && (
+                    <span 
+                      className="badge badge--sm"
+                      style={{
+                        backgroundColor: 'rgba(59, 130, 246, 0.18)',
+                        color: 'var(--accent-bright)',
+                        border: '1px solid rgba(59, 130, 246, 0.35)',
+                        boxShadow: '0 0 8px rgba(59, 130, 246, 0.3)',
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </>
               )}
             </NavLink>
           );
         })}
 
-        <div style={{ height: '1px', backgroundColor: '#1a1a28', margin: '14px 4px' }} />
+        <div className="sidebar-divider" />
 
         <NavLink
           to="/settings"
-          style={({ isActive }) => ({
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '9px 12px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            fontWeight: isActive ? 600 : 500,
-            color: isActive ? '#ffffff' : '#a0a0b8',
-            backgroundColor: isActive ? 'rgba(51, 102, 255, 0.15)' : 'transparent',
-            textDecoration: 'none',
-            transition: 'all 0.15s ease',
-          })}
+          className={({ isActive }) =>
+            `sidebar-nav-item${isActive ? ' sidebar-nav-item--active' : ''}`
+          }
         >
-          <Settings size={16} />
-          <span>Settings</span>
+          <div className="sidebar-nav-item-inner">
+            <Settings size={16} />
+            <span>Settings</span>
+          </div>
         </NavLink>
       </nav>
 
       {/* Bottom Status Box */}
-      <div style={{ padding: '16px', borderTop: '1px solid #1a1a28' }}>
-        <Link
-          to="/"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            backgroundColor: 'rgba(26, 26, 40, 0.6)',
-            border: '1px solid #1e1e30',
-            color: '#a0a0b8',
-            fontSize: '12px',
-            textDecoration: 'none',
-            marginBottom: '10px',
-          }}
-        >
-          <Play size={13} color="#3366ff" />
+      <div className="sidebar-footer">
+        <Link to="/" className="sidebar-replay-btn">
+          <Play size={13} color="var(--accent)" />
           <span>Replay 3D Intro</span>
         </Link>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#606078' }}>
-          <ShieldCheck size={14} color="#00c853" />
-          <span>Paper Capital: ₹10,00,000</span>
+        <div className="sidebar-capital">
+          <ShieldCheck size={14} color="var(--positive)" />
+          <span>Simulated ₹10,00,000</span>
         </div>
       </div>
     </aside>

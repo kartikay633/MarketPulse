@@ -1,7 +1,7 @@
-// ROADMAP: Section 5, 8 & 14 — Indian Equity Market Treemap Heatmap
+// ROADMAP: Section 5, 8 & Design Refinement — Institutional Indian Equity Treemap Heatmap
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Layers, ArrowUpRight, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, Layers, ArrowUpRight } from 'lucide-react';
 import { formatIndianNumber } from '../../utils/formatters';
 
 const HEATMAP_DATA = [
@@ -55,12 +55,35 @@ const HEATMAP_DATA = [
   },
 ];
 
-function getChangeColor(pct) {
-  if (pct >= 2.0) return '#059669'; // Deep Green
-  if (pct >= 0.5) return '#10b981'; // Vibrant Green
-  if (pct > -0.5) return '#374151'; // Neutral Slate
-  if (pct > -2.0) return '#e11d48'; // Soft Red
-  return '#be123c'; // Deep Red
+function getChangeColorStyle(pct) {
+  if (pct >= 2.0) {
+    return {
+      backgroundColor: 'rgba(16, 185, 129, 0.22)',
+      border: '1px solid rgba(16, 185, 129, 0.40)',
+    };
+  }
+  if (pct >= 0.5) {
+    return {
+      backgroundColor: 'rgba(16, 185, 129, 0.12)',
+      border: '1px solid rgba(16, 185, 129, 0.25)',
+    };
+  }
+  if (pct > -0.5) {
+    return {
+      backgroundColor: 'var(--surface)',
+      border: '1px solid var(--border)',
+    };
+  }
+  if (pct > -2.0) {
+    return {
+      backgroundColor: 'rgba(244, 63, 94, 0.12)',
+      border: '1px solid rgba(244, 63, 94, 0.25)',
+    };
+  }
+  return {
+    backgroundColor: 'rgba(244, 63, 94, 0.22)',
+    border: '1px solid rgba(244, 63, 94, 0.40)',
+  };
 }
 
 export default function MarketHeatmap() {
@@ -68,14 +91,7 @@ export default function MarketHeatmap() {
   const [hoveredStock, setHoveredStock] = useState(null);
 
   return (
-    <div
-      style={{
-        backgroundColor: '#0c0c16',
-        borderRadius: '14px',
-        border: '1px solid #1c1c2e',
-        padding: '24px',
-      }}
-    >
+    <div className="card card-padded">
       {/* Header */}
       <div
         style={{
@@ -84,88 +100,79 @@ export default function MarketHeatmap() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '12px',
-          marginBottom: '20px',
+          marginBottom: '16px',
         }}
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={17} color="#818cf8" />
-            <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+            <Layers size={16} color="var(--accent)" />
+            <h2 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
               Indian Equities Market Treemap
             </h2>
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                padding: '2px 7px',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                color: '#a5b4fc',
-              }}
-            >
+            <span className="badge badge--accent badge--sm">
               NIFTY 50 WEIGHTS
             </span>
           </div>
-          <p style={{ color: '#8888a6', fontSize: '13px', margin: '4px 0 0' }}>
-            Interactive heatmap colored by % day change and sized by market capitalization weight.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '3px 0 0' }}>
+            Relative market weight tiles colored by daily price variation.
           </p>
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11.5px', color: '#8888a6' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: 'var(--text-secondary)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#be123c' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'rgba(244, 63, 94, 0.6)' }} />
             <span>&lt; -2%</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#e11d48' }} />
-            <span>-0.5% to -2%</span>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'rgba(244, 63, 94, 0.3)' }} />
+            <span>-0.5%</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#374151' }} />
-            <span>Neutral</span>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }} />
+            <span>Unchanged</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#10b981' }} />
-            <span>+0.5% to +2%</span>
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'rgba(16, 185, 129, 0.3)' }} />
+            <span>+0.5%</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#059669' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'rgba(16, 185, 129, 0.6)' }} />
             <span>&gt; +2%</span>
           </div>
         </div>
       </div>
 
       {/* Sector Groups Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
         {HEATMAP_DATA.map((group) => (
           <div
             key={group.sector}
             style={{
-              backgroundColor: '#07070f',
-              borderRadius: '10px',
-              border: '1px solid #181828',
-              padding: '14px',
+              backgroundColor: 'var(--surface)',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border-subtle)',
+              padding: '12px',
               display: 'flex',
               flexDirection: 'column',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '12px' }}>
-              <span style={{ fontWeight: 700, color: '#a0a0c8' }}>{group.sector}</span>
-              <span style={{ color: '#686884' }}>{group.weight}% Mkt Wt</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '11.5px' }}>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{group.sector}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{group.weight}% Wt</span>
             </div>
 
             {/* Stocks in this sector */}
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-                gap: '8px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))',
+                gap: '6px',
                 flex: 1,
               }}
             >
               {group.stocks.map((stk) => {
-                const bg = getChangeColor(stk.changePercent);
+                const colorStyle = getChangeColorStyle(stk.changePercent);
                 const isPos = stk.changePercent >= 0;
 
                 return (
@@ -175,46 +182,45 @@ export default function MarketHeatmap() {
                     onMouseEnter={() => setHoveredStock(stk)}
                     onMouseLeave={() => setHoveredStock(null)}
                     style={{
-                      backgroundColor: bg,
-                      borderRadius: '8px',
-                      padding: '12px 10px',
+                      ...colorStyle,
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '10px 8px',
                       cursor: 'pointer',
-                      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                      transition: 'transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast)',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      minHeight: '75px',
+                      minHeight: '68px',
                       textAlign: 'center',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                     }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+                      e.currentTarget.style.transform = 'scale(1.02)';
+                      e.currentTarget.style.borderColor = 'var(--accent)';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.borderColor = colorStyle.border.split(' ')[2];
                     }}
                   >
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {stk.symbol.replace('NSE:', '')}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)', marginTop: '2px' }}>
+                    <div className="num-tabular" style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                       ₹{formatIndianNumber(stk.ltp)}
                     </div>
                     <div
+                      className={`num-tabular ${isPos ? 'text-positive' : 'text-negative'}`}
                       style={{
-                        fontSize: '12px',
-                        fontWeight: 800,
-                        color: '#ffffff',
-                        marginTop: '4px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        marginTop: '2px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '2px',
                       }}
                     >
-                      {isPos ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                      {isPos ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                       <span>
                         {isPos ? '+' : ''}
                         {stk.changePercent.toFixed(2)}%
@@ -231,35 +237,32 @@ export default function MarketHeatmap() {
       {/* Hover Information Banner */}
       {hoveredStock && (
         <div
+          className="card"
           style={{
-            marginTop: '16px',
-            backgroundColor: '#121222',
-            padding: '10px 18px',
-            borderRadius: '8px',
-            border: '1px solid #282845',
+            marginTop: '12px',
+            backgroundColor: 'var(--surface)',
+            padding: '8px 16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            fontSize: '13px',
+            fontSize: '12.5px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontWeight: 800, color: '#ffffff' }}>{hoveredStock.symbol}</span>
-            <span style={{ color: '#8888a6' }}>• {hoveredStock.name}</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{hoveredStock.symbol}</span>
+            <span style={{ color: 'var(--text-secondary)' }}>• {hoveredStock.name}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ color: '#ffffff', fontWeight: 700 }}>₹{formatIndianNumber(hoveredStock.ltp)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <span className="num-tabular" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(hoveredStock.ltp)}</span>
             <span
-              style={{
-                fontWeight: 700,
-                color: hoveredStock.changePercent >= 0 ? '#00c076' : '#ff3b57',
-              }}
+              className={`num-tabular ${hoveredStock.changePercent >= 0 ? 'text-positive' : 'text-negative'}`}
+              style={{ fontWeight: 600 }}
             >
               {hoveredStock.changePercent >= 0 ? '+' : ''}
               {hoveredStock.changePercent.toFixed(2)}%
             </span>
-            <span style={{ color: '#818cf8', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
-              Click to view chart <ArrowUpRight size={13} />
+            <span style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600, cursor: 'pointer' }}>
+              View Stock <ArrowUpRight size={13} />
             </span>
           </div>
         </div>

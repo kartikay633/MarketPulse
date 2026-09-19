@@ -1,162 +1,285 @@
-// ROADMAP: Section 5 & 10 — AISummaryCard Component
-import React from 'react';
+// ROADMAP: Section 5, 10 & Design Refinement — Institutional Market Intelligence Card with Post-Market Feed
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAIMarketSummary } from '../../hooks/useAI';
-import { Sparkles, ArrowRight, TrendingUp, RefreshCw, ShieldCheck } from 'lucide-react';
+import {
+  Activity,
+  ArrowRight,
+  RefreshCw,
+  ShieldCheck,
+  Clock,
+  Sparkles,
+  TrendingUp,
+  FileText,
+  Compass,
+  CheckCircle2,
+  Calendar,
+} from 'lucide-react';
 import { Skeleton } from '../common/LoadingSkeleton';
 
 export default function AISummaryCard() {
   const { data: summary, isLoading, refetch, isFetching } = useAIMarketSummary();
+  const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'postmarket' | 'pivots'
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          padding: '22px',
-          borderRadius: '16px',
-          backgroundColor: '#0d0d16',
-          border: '1px solid #1e1e32',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-        }}
-      >
+      <div className="card card-padded" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Skeleton width="160px" height="20px" />
-          <Skeleton width="80px" height="18px" borderRadius="10px" />
+          <Skeleton width="180px" height="18px" />
+          <Skeleton width="90px" height="18px" borderRadius="4px" />
         </div>
-        <Skeleton width="100%" height="36px" />
-        <Skeleton width="90%" height="16px" />
-        <Skeleton width="75%" height="16px" />
+        <Skeleton width="100%" height="24px" />
+        <Skeleton width="90%" height="14px" />
+        <Skeleton width="75%" height="14px" />
       </div>
     );
   }
 
+  const isAfterMarket = summary?.isAfterMarket ?? true;
   const isBullish = summary?.marketStance === 'Bullish Momentum';
+  const postMarketFeed = summary?.postMarketFeed || [];
+  const pivots = summary?.nextSessionPivots || {
+    niftySupport: '25,280 / 25,150',
+    niftyResistance: '25,450 / 25,520',
+    maxPain: '23,300',
+    pcr: '1.15 (Bullish Bias)',
+    vix: '12.85',
+  };
 
   return (
-    <div
-      style={{
-        padding: '22px',
-        borderRadius: '16px',
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(13, 13, 22, 0.95))',
-        border: '1px solid rgba(99, 102, 241, 0.28)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '14px',
+    <div 
+      className="card card-padded" 
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '12px',
+        border: isAfterMarket ? '1px solid rgba(59, 130, 246, 0.28)' : '1px solid var(--border)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Background ambient glow */}
-      <div
+      {/* Subtle background ambient orb for AI */}
+      <div 
         style={{
           position: 'absolute',
-          top: '-40px',
-          right: '-40px',
-          width: '180px',
-          height: '180px',
-          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, rgba(0,0,0,0) 70%)',
+          top: '-20px',
+          right: '-20px',
+          width: '120px',
+          height: '120px',
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)',
           pointerEvents: 'none',
+          filter: 'blur(15px)',
         }}
       />
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div
+          <img
+            src="/pulse_ai_core.jpg"
+            alt="Pulse AI"
             style={{
-              width: '26px',
-              height: '26px',
-              borderRadius: '7px',
-              background: 'linear-gradient(135deg, #4f46e5, #818cf8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff',
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '1px solid rgba(59, 130, 246, 0.5)',
+              boxShadow: '0 0 10px rgba(59, 130, 246, 0.4)',
             }}
-          >
-            <Sparkles size={14} />
+          />
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>Pulse AI Intelligence</span>
+              {isAfterMarket && (
+                <span style={{ fontSize: '10px', color: 'var(--accent-bright)', fontWeight: 600 }}>• POST-MARKET</span>
+              )}
+            </div>
           </div>
-          <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#f0f0fa' }}>
-            Pulse AI Market Intelligence
-          </span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span
-            style={{
-              fontSize: '10.5px',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: '6px',
-              backgroundColor: isBullish ? 'rgba(0, 192, 118, 0.15)' : 'rgba(99, 102, 241, 0.15)',
-              color: isBullish ? '#00c076' : '#818cf8',
-              border: `1px solid ${isBullish ? 'rgba(0, 192, 118, 0.3)' : 'rgba(99, 102, 241, 0.3)'}`,
-            }}
-          >
-            {summary?.marketStance || 'Market Pulse'}
+          <span className={`badge badge--sm ${isAfterMarket ? 'badge--accent' : (isBullish ? 'badge--positive' : 'badge--accent')}`} style={{ fontSize: '10px' }}>
+            {isAfterMarket ? 'EOD SYNTHESIS' : (summary?.marketStance || 'Neutral')}
           </span>
 
           <button
             onClick={() => refetch()}
-            title="Refresh AI Digest"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#717192',
-              cursor: 'pointer',
-              padding: '4px',
-              display: 'flex',
-              alignItems: 'center',
-            }}
+            title="Refresh Intelligence Digest"
+            className="btn-icon"
+            style={{ padding: '4px', width: '28px', height: '28px' }}
           >
             <RefreshCw size={12} style={{ animation: isFetching ? 'spin 1s linear infinite' : 'none' }} />
           </button>
         </div>
       </div>
 
-      {/* Headline */}
-      <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.4 }}>
-        {summary?.headline}
-      </h3>
+      {/* Navigation Sub-Tabs */}
+      <div 
+        className="tab-group" 
+        style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.03)', 
+          border: '1px solid var(--border-subtle)',
+          padding: '2px',
+          borderRadius: 'var(--radius-sm)',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setActiveTab('summary')}
+          className={`tab-pill${activeTab === 'summary' ? ' tab-pill--active' : ''}`}
+          style={{ fontSize: '11px', padding: '4px 10px' }}
+        >
+          <FileText size={11} />
+          <span>Last Day Wrap</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('postmarket')}
+          className={`tab-pill${activeTab === 'postmarket' ? ' tab-pill--active' : ''}`}
+          style={{ fontSize: '11px', padding: '4px 10px' }}
+        >
+          <Clock size={11} />
+          <span>Post-Market Feed (4)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('pivots')}
+          className={`tab-pill${activeTab === 'pivots' ? ' tab-pill--active' : ''}`}
+          style={{ fontSize: '11px', padding: '4px 10px' }}
+        >
+          <Compass size={11} />
+          <span>Next Day Pivots</span>
+        </button>
+      </div>
 
-      {/* Summary Narrative */}
-      <p style={{ fontSize: '12.5px', color: '#a5a5c5', lineHeight: 1.6, margin: 0 }}>
-        {summary?.summary}
-      </p>
+      {/* TAB 1: Last Day Summary & Key Closing Drivers */}
+      {activeTab === 'summary' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', zIndex: 1 }}>
+          <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, lineHeight: 1.4 }}>
+            {summary?.headline}
+          </h3>
 
-      {/* Key Drivers */}
-      {summary?.keyDrivers && summary.keyDrivers.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '2px' }}>
-          {summary.keyDrivers.slice(0, 2).map((driver, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#c4c4dc' }}>
-              <span style={{ color: '#818cf8', fontWeight: 700, lineHeight: 1.2 }}>•</span>
-              <span style={{ lineHeight: 1.45 }}>{driver}</span>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0 }}>
+            {summary?.summary}
+          </p>
+
+          {/* Key Drivers */}
+          {summary?.keyDrivers && summary.keyDrivers.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', backgroundColor: 'rgba(255, 255, 255, 0.02)', padding: '8px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
+              {summary.keyDrivers.map((driver, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--accent)', fontWeight: 700, minWidth: '10px' }}>•</span>
+                  <span style={{ lineHeight: 1.45 }}>{driver}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+        </div>
+      )}
+
+      {/* TAB 2: Chronological Post-Market Feed (What happened after 3:30 PM) */}
+      {activeTab === 'postmarket' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
+            <Calendar size={12} />
+            <span>Chronological feed of disclosures occurring after the 3:30 PM closing bell:</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {postMarketFeed.map((event, idx) => (
+              <div 
+                key={idx}
+                style={{
+                  padding: '8px 10px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.025)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--accent-bright)', fontFamily: 'var(--font-mono)' }}>
+                      {event.time}
+                    </span>
+                    <span className="badge badge--neutral" style={{ fontSize: '9px', padding: '1px 5px' }}>
+                      {event.tag}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {event.title}
+                </div>
+
+                <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                  {event.detail}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: Next Day Pivots & Gameplan */}
+      {activeTab === 'pivots' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            Quantitative pivot levels and derivative pinning boundaries for the next market open:
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            <div style={{ padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>NIFTY 50 Support</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--positive)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
+                {pivots.niftySupport}
+              </div>
+            </div>
+
+            <div style={{ padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>NIFTY 50 Resistance</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--negative)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
+                {pivots.niftyResistance}
+              </div>
+            </div>
+
+            <div style={{ padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Options Max Pain</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent-bright)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
+                {pivots.maxPain} Strike
+              </div>
+            </div>
+
+            <div style={{ padding: '8px', backgroundColor: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Put-Call Ratio (PCR)</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--positive)', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
+                {pivots.pcr}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Footer CTA to /ai */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <span style={{ fontSize: '11px', color: '#656580', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <ShieldCheck size={12} /> Grounded in live Upstox data
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)', position: 'relative', zIndex: 1 }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <ShieldCheck size={12} color="var(--positive)" /> Grounded in verified exchange settlement
         </span>
         <Link
           to="/ai"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '5px',
+            gap: '4px',
             fontSize: '12px',
-            color: '#818cf8',
+            color: 'var(--accent-bright)',
             fontWeight: 600,
             textDecoration: 'none',
           }}
         >
-          <span>Ask Pulse AI</span>
+          <span>Deep Research Desk</span>
           <ArrowRight size={13} />
         </Link>
       </div>

@@ -1,4 +1,5 @@
 // ROADMAP: Section 2 & 8 — Market Status Badge Component
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React from 'react';
 
 export function MarketStatusBadge({ status = 'CLOSED', reason, nextEvent, compact = false }) {
@@ -6,26 +7,34 @@ export function MarketStatusBadge({ status = 'CLOSED', reason, nextEvent, compac
   const isPre = status === 'PRE_MARKET';
   const isPost = status === 'POST_MARKET';
 
-  const dotColor = isLive ? '#00c853' : isPre ? '#ffab00' : isPost ? '#3366ff' : '#ff1744';
+  const dotColor = isLive
+    ? 'var(--positive)'
+    : isPre
+    ? 'var(--warning)'
+    : isPost
+    ? 'var(--accent)'
+    : 'var(--text-muted)';
+
   const bgColor = isLive
-    ? 'rgba(0, 200, 83, 0.1)'
+    ? 'var(--positive-muted)'
     : isPre
-    ? 'rgba(255, 171, 0, 0.1)'
+    ? 'var(--warning-muted)'
     : isPost
-    ? 'rgba(51, 102, 255, 0.1)'
-    : 'rgba(255, 23, 68, 0.1)';
+    ? 'var(--accent-muted)'
+    : 'var(--card)';
+
   const borderColor = isLive
-    ? 'rgba(0, 200, 83, 0.25)'
+    ? 'var(--positive-border)'
     : isPre
-    ? 'rgba(255, 171, 0, 0.25)'
+    ? 'rgba(245, 158, 11, 0.25)'
     : isPost
-    ? 'rgba(51, 102, 255, 0.25)'
-    : 'rgba(255, 23, 68, 0.25)';
+    ? 'var(--accent-border)'
+    : 'var(--border)';
 
   const label = isLive
     ? 'MARKET LIVE'
     : isPre
-    ? 'PRE-OPEN SESSION'
+    ? 'PRE-OPEN'
     : isPost
     ? 'POST-MARKET'
     : 'MARKET CLOSED';
@@ -36,30 +45,31 @@ export function MarketStatusBadge({ status = 'CLOSED', reason, nextEvent, compac
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        padding: compact ? '2px 8px' : '4px 10px',
-        borderRadius: '9999px',
+        padding: compact ? '2px 7px' : '4px 10px',
+        borderRadius: 'var(--radius-xs)',
         backgroundColor: bgColor,
         border: `1px solid ${borderColor}`,
         fontSize: compact ? '10px' : '11px',
-        fontWeight: 600,
+        fontWeight: 700,
         color: dotColor,
         letterSpacing: '0.04em',
+        boxShadow: `0 0 12px ${dotColor}22`,
       }}
       title={nextEvent || reason || label}
     >
       <span
         style={{
-          width: '6px',
-          height: '6px',
+          width: '7px',
+          height: '7px',
           borderRadius: '50%',
           backgroundColor: dotColor,
-          boxShadow: isLive ? `0 0 8px ${dotColor}` : 'none',
-          animation: isLive ? 'pulseGlow 2s infinite' : 'none',
+          boxShadow: `0 0 8px ${dotColor}`,
         }}
+        className={isLive ? 'animate-pulse' : ''}
       />
-      <span>{label}</span>
+      <span style={{ color: dotColor }}>{label}</span>
       {!compact && nextEvent && (
-        <span style={{ color: '#a0a0b8', fontWeight: 400, fontSize: '10px', marginLeft: '4px' }}>
+        <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '10.5px', marginLeft: '4px' }}>
           • {nextEvent}
         </span>
       )}

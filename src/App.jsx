@@ -21,6 +21,7 @@ import PortfolioPage from './app/pages/PortfolioPage';
 import TradePage from './app/pages/TradePage';
 import AlertsPage from './app/pages/AlertsPage';
 import SettingsPage from './app/pages/SettingsPage';
+import AuthCallbackPage from './app/pages/AuthCallbackPage';
 import ProtectedRoute from './app/components/common/ProtectedRoute';
 import { useAuthStore } from './app/stores/authStore';
 
@@ -53,6 +54,9 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
           </Route>
+
+          {/* OAuth Callback Route */}
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
           {/* Onboarding Flow (Protected) */}
           <Route

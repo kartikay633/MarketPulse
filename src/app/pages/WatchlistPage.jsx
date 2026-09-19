@@ -1,11 +1,12 @@
-// ROADMAP: Section 5 & 11 — Watchlist Page Component
+// Flagship Watchlist Page — Real company logos + premium design
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWatchlist, useAddToWatchlist, useRemoveFromWatchlist } from '../hooks/useWatchlist';
-import { Star, Plus, Trash2, Zap, ArrowUpRight, TrendingUp, TrendingDown, Search, Activity } from 'lucide-react';
-import { formatIndianCurrency, formatIndianNumber } from '../utils/formatters';
+import { Star, Plus, Trash2, Zap, TrendingUp, TrendingDown, Search, ArrowUpRight, ArrowDownRight, ExternalLink } from 'lucide-react';
+import { formatIndianNumber } from '../utils/formatters';
 import { TableSkeleton } from '../components/common/LoadingSkeleton';
 import ErrorBoundary from '../components/common/ErrorBoundary';
+import CompanyLogo from '../components/common/CompanyLogo';
 
 const POPULAR_ADD_SUGGESTIONS = ['NSE:BHARTIARTL', 'NSE:TATAMOTORS', 'NSE:ITC', 'NSE:LT', 'NSE:SBIN', 'NSE:MARUTI'];
 
@@ -14,16 +15,13 @@ export default function WatchlistPage() {
   const { data: items = [], isLoading } = useWatchlist();
   const addMutation = useAddToWatchlist();
   const removeMutation = useRemoveFromWatchlist();
-
   const [addInput, setAddInput] = useState('');
 
   const handleAddSymbol = (sym) => {
     const symbolToAdd = (sym || addInput).trim().toUpperCase();
     if (!symbolToAdd) return;
     const formatted = symbolToAdd.includes(':') ? symbolToAdd : `NSE:${symbolToAdd}`;
-    addMutation.mutate(formatted, {
-      onSuccess: () => setAddInput(''),
-    });
+    addMutation.mutate(formatted, { onSuccess: () => setAddInput('') });
   };
 
   const handleRemove = (e, symbol) => {
@@ -31,132 +29,91 @@ export default function WatchlistPage() {
     removeMutation.mutate(symbol);
   };
 
-  const advances = items.filter((i) => i.change >= 0).length;
-  const declines = items.filter((i) => i.change < 0).length;
+  const advances = items.filter((i) => (i.change ?? 0) >= 0).length;
+  const declines = items.filter((i) => (i.change ?? 0) < 0).length;
 
   return (
     <ErrorBoundary>
-      <div style={{ padding: '28px 36px 64px', maxWidth: '1440px', margin: '0 auto' }}>
+      <div className="page-container-wide">
         {/* Page Header */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '16px',
-            marginBottom: '24px',
-            paddingBottom: '20px',
-            borderBottom: '1px solid #1c1c2e',
-          }}
-        >
+        <div className="page-header">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #eab308, #ca8a04)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                }}
-              >
-                <Star size={17} fill="#ffffff" />
-              </div>
-              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
-                My Watchlist
-              </h1>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  backgroundColor: '#1b1b2d',
-                  color: '#eab308',
-                  border: '1px solid rgba(234, 179, 8, 0.3)',
-                }}
-              >
-                {items.length} TRACKED
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+              <h1 className="page-title">My Watchlist</h1>
+              <span className="badge badge--accent">
+                {items.length} INSTRUMENTS
               </span>
             </div>
-            <p style={{ color: '#8888a6', fontSize: '13.5px', margin: 0 }}>
-              Real-time multi-stock tracker enriched with live NSE/BSE tick feeds and direct paper trading shortcuts.
+            <p className="page-subtitle">
+              Live multi-asset radar with real-time NSE / BSE market quote updates.
             </p>
           </div>
 
-          {/* Quick Stats Pill */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0e0e18', padding: '8px 16px', borderRadius: '10px', border: '1px solid #1c1c2e' }}>
-            <span style={{ fontSize: '12px', color: '#8888a6' }}>Breadth:</span>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#00c076', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {/* Breadth Pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '8px 16px',
+            borderRadius: 'var(--radius-md)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+            border: '1px solid var(--border)',
+            backdropFilter: 'blur(12px)',
+          }}>
+            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Breadth</span>
+            <div style={{ width: '1px', height: '14px', background: 'var(--border)' }} />
+            <span className="text-positive num-tabular" style={{ fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
               <TrendingUp size={13} /> {advances} Up
             </span>
-            <span style={{ color: '#333348' }}>•</span>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#ff3b57', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ width: '1px', height: '14px', background: 'var(--border)' }} />
+            <span className="text-negative num-tabular" style={{ fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
               <TrendingDown size={13} /> {declines} Down
             </span>
           </div>
         </div>
 
-        {/* Add Symbol Input Bar */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
-            marginBottom: '20px',
-            backgroundColor: '#0d0d16',
-            padding: '12px 18px',
-            borderRadius: '12px',
-            border: '1px solid #1e1e32',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '260px' }}>
-            <Search size={15} color="#6366f1" />
-            <input
-              type="text"
-              placeholder="Add stock symbol (e.g. RELIANCE, TCS, INFY)..."
-              value={addInput}
-              onChange={(e) => setAddInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddSymbol()}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: '#f0f0fa',
-                fontSize: '13.5px',
-              }}
-            />
+        {/* Add Symbol Row */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          marginBottom: '16px',
+          padding: '12px 16px',
+          borderRadius: 'var(--radius-md)',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+          border: '1px solid var(--border)',
+          backdropFilter: 'blur(12px)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '280px' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={14} className="input-icon" style={{ color: 'var(--text-dim)' }} />
+              <input
+                type="text"
+                placeholder="Add instrument symbol (e.g. RELIANCE, TCS, INFY)..."
+                value={addInput}
+                onChange={(e) => setAddInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddSymbol()}
+                className="input input--with-icon"
+                style={{ padding: '8px 12px 8px 36px', fontSize: '12.5px' }}
+              />
+            </div>
             <button
               onClick={() => handleAddSymbol()}
               disabled={!addInput.trim() || addMutation.isPending}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '6px 14px',
-                borderRadius: '8px',
-                backgroundColor: addInput.trim() ? '#6366f1' : '#1c1c2e',
-                color: '#ffffff',
-                border: 'none',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: addInput.trim() ? 'pointer' : 'default',
-              }}
+              className="btn btn-primary"
+              style={{ padding: '8px 14px', fontSize: '12px' }}
             >
-              <Plus size={13} /> Add Symbol
+              <Plus size={13} />
+              <span>Add Symbol</span>
             </button>
           </div>
 
-          {/* Quick Suggestion Chips */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontSize: '11px', color: '#686884' }}>Suggestions:</span>
+            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Quick Add:
+            </span>
             {POPULAR_ADD_SUGGESTIONS.slice(0, 4).map((sym) => {
               const clean = sym.replace('NSE:', '');
               const alreadyHas = items.some((i) => i.symbol === sym);
@@ -165,16 +122,8 @@ export default function WatchlistPage() {
                 <button
                   key={sym}
                   onClick={() => handleAddSymbol(sym)}
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    backgroundColor: '#141422',
-                    border: '1px solid #24243a',
-                    color: '#818cf8',
-                    cursor: 'pointer',
-                  }}
+                  className="chip"
+                  style={{ cursor: 'pointer', padding: '3px 9px', fontSize: '11px' }}
                 >
                   +{clean}
                 </button>
@@ -184,35 +133,33 @@ export default function WatchlistPage() {
         </div>
 
         {/* Watchlist Table */}
-        <div
-          style={{
-            backgroundColor: '#0d0d16',
-            borderRadius: '16px',
-            border: '1px solid #1e1e32',
-            overflow: 'hidden',
-          }}
-        >
+        <div style={{
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border)',
+          background: 'var(--card)',
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-card)',
+        }}>
           {/* Table Header */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(180px, 2fr) minmax(110px, 1fr) minmax(130px, 1fr) minmax(140px, 1fr) minmax(120px, 1fr) 140px',
-              padding: '14px 20px',
-              backgroundColor: '#090910',
-              borderBottom: '1px solid #1c1c2e',
-              fontSize: '11px',
-              fontWeight: 700,
-              color: '#656584',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}
-          >
-            <span>Instrument</span>
-            <span style={{ textAlign: 'right' }}>LTP</span>
-            <span style={{ textAlign: 'right' }}>Change (%)</span>
-            <span style={{ textAlign: 'right' }}>Day High / Low</span>
-            <span style={{ textAlign: 'right' }}>Volume</span>
-            <span style={{ textAlign: 'right' }}>Actions</span>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(200px, 2.5fr) minmax(110px, 1fr) minmax(130px, 1fr) minmax(140px, 1fr) minmax(120px, 1fr) 130px',
+            padding: '10px 18px',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface)',
+          }}>
+            {['INSTRUMENT', 'PRICE (LTP)', 'CHANGE (%)', 'HIGH / LOW', 'VOLUME', 'ACTIONS'].map((h, i) => (
+              <span key={h} style={{
+                fontSize: '10.5px',
+                fontWeight: 700,
+                color: 'var(--text-dim)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.07em',
+                textAlign: i > 0 ? 'right' : 'left',
+              }}>
+                {h}
+              </span>
+            ))}
           </div>
 
           {/* Table Body */}
@@ -221,174 +168,112 @@ export default function WatchlistPage() {
               <TableSkeleton rows={6} />
             </div>
           ) : items.length === 0 ? (
-            <div
-              style={{
-                padding: '64px 20px',
-                textAlign: 'center',
-                color: '#686888',
-              }}
-            >
-              <Star size={36} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
-              <div style={{ fontSize: '15px', fontWeight: 600, color: '#f0f0fa', marginBottom: '6px' }}>
-                Your watchlist is empty
-              </div>
-              <div style={{ fontSize: '13px', marginBottom: '18px' }}>
-                Track your favorite NSE and BSE stocks with real-time ticks and instant execution.
+            <div className="empty-state">
+              <Star size={36} className="empty-state-icon" />
+              <div className="empty-state-title">Your watchlist is empty</div>
+              <div className="empty-state-description">
+                Track your priority NSE and BSE stocks with real-time ticks and quick trading shortcuts.
               </div>
               <button
                 onClick={() => handleAddSymbol('NSE:RELIANCE')}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  backgroundColor: '#6366f1',
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
+                className="btn btn-primary"
+                style={{ padding: '9px 18px', fontSize: '13px' }}
               >
-                Add RELIANCE to Watchlist
+                <Plus size={14} /> Add RELIANCE
               </button>
             </div>
           ) : (
             <div>
               {items.map((item, idx) => {
-                const isPos = item.change >= 0;
-                const color = isPos ? '#00c076' : '#ff3b57';
+                const isPos = (item.change ?? 0) >= 0;
+                const cleanSym = item.symbol.replace('NSE:', '').replace('BSE:', '');
                 return (
                   <div
                     key={item.symbol}
                     onClick={() => navigate(`/stocks/${item.symbol}`)}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: 'minmax(180px, 2fr) minmax(110px, 1fr) minmax(130px, 1fr) minmax(140px, 1fr) minmax(120px, 1fr) 140px',
+                      gridTemplateColumns: 'minmax(200px, 2.5fr) minmax(110px, 1fr) minmax(130px, 1fr) minmax(140px, 1fr) minmax(120px, 1fr) 130px',
+                      padding: '12px 18px',
                       alignItems: 'center',
-                      padding: '14px 20px',
-                      borderBottom: idx === items.length - 1 ? 'none' : '1px solid #141422',
                       cursor: 'pointer',
-                      transition: 'background-color 0.1s ease',
+                      borderBottom: idx < items.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                      transition: 'background 0.15s ease',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#131320')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    className="watchlist-row"
                   >
-                    {/* Symbol & Name */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '8px',
-                          backgroundColor: '#18182a',
-                          border: '1px solid #26263e',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#818cf8',
-                          fontWeight: 700,
-                          fontSize: '11px',
-                        }}
-                      >
-                        {item.symbol.includes(':') ? item.symbol.split(':')[1].substring(0, 2) : item.symbol.substring(0, 2)}
-                      </div>
-                      <div>
+                    {/* Company Logo + Symbol */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+                      <CompanyLogo symbol={cleanSym} size={36} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontWeight: 600, color: '#f0f0fa', fontSize: '13.5px' }}>
-                            {item.symbol}
+                          <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '13.5px' }}>
+                            {cleanSym}
                           </span>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              padding: '1px 5px',
-                              borderRadius: '4px',
-                              backgroundColor: '#1b1b2d',
-                              color: '#8b8ba8',
-                            }}
-                          >
+                          <span style={{
+                            fontSize: '9px', padding: '1px 5px', borderRadius: '3px',
+                            backgroundColor: 'rgba(59,130,246,0.12)', color: 'var(--accent-bright)',
+                            border: '1px solid rgba(59,130,246,0.25)', fontWeight: 700, letterSpacing: '0.04em',
+                          }}>
                             {item.exchange || 'NSE'}
                           </span>
                         </div>
-                        <div style={{ fontSize: '11.5px', color: '#7a7a96', marginTop: '2px' }}>
-                          {item.name}
+                        <div style={{ fontSize: '11px', color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.name || 'Listed Stock'}
                         </div>
                       </div>
                     </div>
 
                     {/* LTP */}
-                    <div style={{ textAlign: 'right', fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>
+                    <div className="num-tabular" style={{ textAlign: 'right', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                       ₹{formatIndianNumber(item.ltp)}
                     </div>
 
-                    {/* Change & % */}
-                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color }}>
-                        {isPos ? '+' : ''}{item.changePercent.toFixed(2)}%
+                    {/* Change */}
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+                      <span className="num-tabular" style={{
+                        fontSize: '12.5px', fontWeight: 700,
+                        color: isPos ? 'var(--positive-text)' : 'var(--negative-text)',
+                        display: 'flex', alignItems: 'center', gap: '2px',
+                      }}>
+                        {isPos ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                        {isPos ? '+' : ''}{(item.changePercent ?? 0).toFixed(2)}%
                       </span>
-                      <span style={{ fontSize: '11px', color: '#777790', fontFamily: "'JetBrains Mono', monospace" }}>
-                        {isPos ? '+' : ''}₹{formatIndianNumber(Math.abs(item.change))}
+                      <span className="num-tabular" style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: 500 }}>
+                        {isPos ? '+' : ''}₹{formatIndianNumber(Math.abs(item.change ?? 0))}
                       </span>
                     </div>
 
-                    {/* Day Range */}
-                    <div style={{ textAlign: 'right', fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" }}>
-                      <span style={{ color: '#00c076' }}>₹{formatIndianNumber(item.high || item.ltp)}</span>
-                      <span style={{ color: '#55556a', margin: '0 4px' }}>/</span>
-                      <span style={{ color: '#ff3b57' }}>₹{formatIndianNumber(item.low || item.ltp)}</span>
+                    {/* High / Low */}
+                    <div className="num-tabular" style={{ textAlign: 'right', fontSize: '12px' }}>
+                      <span className="text-positive">₹{formatIndianNumber(item.high || item.ltp)}</span>
+                      <span style={{ color: 'var(--text-dim)', margin: '0 3px' }}>/</span>
+                      <span className="text-negative">₹{formatIndianNumber(item.low || item.ltp)}</span>
                     </div>
 
                     {/* Volume */}
-                    <div style={{ textAlign: 'right', fontSize: '12.5px', color: '#9d9db8', fontFamily: "'JetBrains Mono', monospace" }}>
+                    <div className="num-tabular" style={{ textAlign: 'right', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
                       {formatIndianNumber(item.volume || 1000000)}
                     </div>
 
-                    {/* Action buttons */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                    {/* Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/trade?symbol=${encodeURIComponent(item.symbol)}`);
                         }}
-                        title="Execute Trade"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '5px 10px',
-                          borderRadius: '6px',
-                          backgroundColor: '#1a1a2e',
-                          border: '1px solid #282845',
-                          color: '#818cf8',
-                          fontSize: '11.5px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#4f46e5';
-                          e.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#1a1a2e';
-                          e.currentTarget.style.color = '#818cf8';
-                        }}
+                        className="btn btn-secondary"
+                        style={{ padding: '5px 10px', fontSize: '11.5px', gap: '4px' }}
                       >
-                        <Zap size={11} /> Trade
+                        <Zap size={11} />
+                        <span>Trade</span>
                       </button>
-
                       <button
                         onClick={(e) => handleRemove(e, item.symbol)}
-                        title="Remove from Watchlist"
-                        style={{
-                          padding: '6px',
-                          borderRadius: '6px',
-                          backgroundColor: 'transparent',
-                          border: 'none',
-                          color: '#656580',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = '#ff3b57')}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = '#656580')}
+                        className="btn-icon"
+                        style={{ padding: '5px', color: 'var(--text-muted)' }}
+                        title="Remove"
                       >
                         <Trash2 size={13} />
                       </button>

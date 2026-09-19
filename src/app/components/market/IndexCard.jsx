@@ -1,133 +1,147 @@
-// ROADMAP: Section 5 & Phase 2 — Index Card Component
+// ROADMAP: Section 5 & Design Refinement — Institutional Index Card
 import React from 'react';
 import { formatNumber, formatPercent } from '../../utils/formatters';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export function IndexCard({ index }) {
+export function IndexCard({ index, onClick }) {
   if (!index) return null;
 
   const isPositive = index.change >= 0;
-  const isVix = index.symbol === 'INDIA_VIX';
-
-  // For VIX, lower is calm/bullish, higher is fear/volatility
-  const accentColor = isPositive ? '#00c853' : '#ff1744';
-  const bgTint = isPositive ? 'rgba(0, 200, 83, 0.06)' : 'rgba(255, 23, 68, 0.06)';
-  const borderTint = isPositive ? 'rgba(0, 200, 83, 0.2)' : 'rgba(255, 23, 68, 0.2)';
+  const strokeColor = isPositive ? '#10B981' : '#F43F5E';
+  const gradId = `spark-${index.symbol || index.name}`.replace(/[^a-zA-Z0-9]/g, '');
 
   // Calculate day range percentage (low to high)
   const range = (index.high && index.low && index.high > index.low)
     ? Math.min(Math.max(((index.value - index.low) / (index.high - index.low)) * 100, 0), 100)
     : 50;
 
+  // Mini sparkline path representation
+  const sparklinePoints = isPositive
+    ? "0,28 15,24 30,26 45,18 60,20 75,12 90,14 105,6 120,4 135,2 140,2"
+    : "0,4 15,6 30,12 45,10 60,18 75,16 90,22 105,20 120,26 135,28 140,28";
+
+  const areaPoints = isPositive
+    ? `0,28 15,24 30,26 45,18 60,20 75,12 90,14 105,6 120,4 135,2 140,2 140,32 0,32`
+    : `0,4 15,6 30,12 45,10 60,18 75,16 90,22 105,20 120,26 135,28 140,28 140,32 0,32`;
+
   return (
     <div
-      style={{
-        padding: '20px',
-        borderRadius: '14px',
-        backgroundColor: '#12121a',
-        border: '1px solid #1e1e30',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'all 0.2s ease',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = borderTint;
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = `0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px ${bgTint}`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = '#1e1e30';
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-      }}
+      onClick={onClick}
+      className={`index-card ${isPositive ? 'index-card--positive' : 'index-card--negative'}`}
+      style={{ cursor: onClick ? 'pointer' : 'default', position: 'relative' }}
     >
-      {/* Subtle background ambient corner glow */}
+      {/* Ambient corner glow */}
       <div
         style={{
           position: 'absolute',
           top: '-20px',
           right: '-20px',
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          backgroundColor: bgTint,
-          filter: 'blur(24px)',
+          width: '90px',
+          height: '90px',
+          background: isPositive 
+            ? 'radial-gradient(circle, rgba(16, 185, 129, 0.20) 0%, transparent 70%)' 
+            : 'radial-gradient(circle, rgba(244, 63, 94, 0.20) 0%, transparent 70%)',
           pointerEvents: 'none',
+          filter: 'blur(10px)',
         }}
       />
 
       {/* Header: Name & Change Badge */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: '#a0a0b8', letterSpacing: '0.04em' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>
           {index.name}
         </span>
-        <div
+        <span 
+          className={`badge ${isPositive ? 'badge--positive' : 'badge--negative'}`}
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
             padding: '3px 8px',
-            borderRadius: '6px',
-            backgroundColor: bgTint,
-            border: `1px solid ${borderTint}`,
-            color: accentColor,
             fontSize: '11px',
-            fontWeight: 600,
+            fontWeight: 700,
+            borderRadius: 'var(--radius-xs)',
+            boxShadow: isPositive 
+              ? '0 0 10px rgba(16, 185, 129, 0.25)' 
+              : '0 0 10px rgba(244, 63, 94, 0.25)',
           }}
         >
           {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-          <span>{formatPercent(index.changePercent)}</span>
+          {formatPercent(index.changePercent)}
+        </span>
+      </div>
+
+      {/* Mid Section: Value & Mini Sparkline Graphic */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '12px', position: 'relative', zIndex: 1 }}>
+        <div>
+          <div className="num-tabular" style={{ fontSize: '24px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+            {formatNumber(index.value, 2)}
+          </div>
+          <div className="num-tabular" style={{ fontSize: '12.5px', fontWeight: 600, color: isPositive ? 'var(--positive-text)' : 'var(--negative-text)', marginTop: '4px' }}>
+            {isPositive ? '+' : ''}{formatNumber(index.change, 2)}
+          </div>
+        </div>
+
+        {/* Mini SVG Sparkline */}
+        <div style={{ width: '85px', height: '32px', opacity: 0.85 }}>
+          <svg viewBox="0 0 140 32" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+            <defs>
+              <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={strokeColor} stopOpacity="0.35" />
+                <stop offset="100%" stopColor={strokeColor} stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
+            <polygon points={areaPoints} fill={`url(#${gradId})`} />
+            <polyline
+              points={sparklinePoints}
+              fill="none"
+              stroke={strokeColor}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </div>
 
-      {/* Hero Index Value */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', zIndex: 1 }}>
-        <span
-          style={{
-            fontSize: '24px',
-            fontWeight: 700,
-            fontFamily: "'JetBrains Mono', monospace",
-            color: '#f0f0f5',
-            letterSpacing: '-0.02em',
-          }}
-        >
-          {formatNumber(index.value, 2)}
-        </span>
-        <span style={{ fontSize: '13px', fontWeight: 500, color: accentColor }}>
-          {isPositive ? '+' : ''}{formatNumber(index.change, 2)}
-        </span>
-      </div>
-
-      {/* Day's Range Indicator */}
+      {/* Day Range Bar with Position Indicator */}
       {index.low && index.high && (
-        <div style={{ zIndex: 1, marginTop: '2px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#606078', marginBottom: '4px' }}>
-            <span>L: {formatNumber(index.low, 1)}</span>
-            <span>H: {formatNumber(index.high, 1)}</span>
+        <div style={{ marginTop: '14px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: 500 }}>
+            <span>L: <strong style={{ color: 'var(--text-secondary)' }}>{formatNumber(index.low, 1)}</strong></span>
+            <span>H: <strong style={{ color: 'var(--text-secondary)' }}>{formatNumber(index.high, 1)}</strong></span>
           </div>
-          <div
-            style={{
-              width: '100%',
-              height: '4px',
-              borderRadius: '2px',
-              backgroundColor: '#1a1a28',
+
+          <div 
+            style={{ 
+              height: '4px', 
+              borderRadius: '2px', 
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
               position: 'relative',
-              overflow: 'hidden',
+              overflow: 'visible',
             }}
           >
+            {/* Active Range Fill */}
+            <div
+              style={{
+                height: '100%',
+                width: `${range}%`,
+                backgroundColor: isPositive ? 'var(--positive)' : 'var(--negative)',
+                borderRadius: '2px',
+                boxShadow: isPositive 
+                  ? '0 0 6px rgba(16, 185, 129, 0.6)' 
+                  : '0 0 6px rgba(244, 63, 94, 0.6)',
+              }}
+            />
+            {/* Glowing pin dot marker */}
             <div
               style={{
                 position: 'absolute',
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: `${range}%`,
-                background: `linear-gradient(90deg, #1e3a8a, ${accentColor})`,
-                borderRadius: '2px',
+                top: '-3px',
+                left: `calc(${range}% - 5px)`,
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                backgroundColor: '#FFFFFF',
+                border: `2px solid ${strokeColor}`,
+                boxShadow: `0 0 8px ${strokeColor}`,
               }}
             />
           </div>

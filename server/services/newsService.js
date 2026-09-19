@@ -16,14 +16,17 @@ export class NewsService {
 
   async getMarketNews(options = {}) {
     const category = options.category || 'all';
-    const limit = options.limit || 15;
+    const limit = options.limit || 30;
     const cacheKey = `news:market:${category}:${limit}`;
 
     const cached = cache.get(cacheKey);
-    if (cached) return cached;
+    // Only return cached if it contains a healthy number of articles (preventing stale 3-article cache)
+    if (cached && Array.isArray(cached) && cached.length >= Math.min(limit, 10)) {
+      return cached;
+    }
 
     const articles = await this.provider.getMarketNews({ category, limit });
-    cache.set(cacheKey, articles, 300); // 5 minutes cache
+    cache.set(cacheKey, articles, 120); // 2 minutes cache
     return articles;
   }
 

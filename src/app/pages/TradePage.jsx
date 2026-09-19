@@ -1,5 +1,6 @@
 // ROADMAP: Section 5 & 11 — Paper Trade Terminal Component
-import React, { useState, useEffect, useMemo } from 'react';
+// Institutional Terminal Styling — Exact Market Pulse Design System
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useStockQuote } from '../hooks/useMarketData';
 import { usePortfolio, useOrders, useExecuteTrade } from '../hooks/useTrade';
@@ -9,16 +10,16 @@ import {
   TrendingDown,
   Clock,
   ArrowRight,
-  CheckCircle2,
   AlertCircle,
   RefreshCw,
   Wallet,
   ShieldCheck,
   Search,
+  CheckCircle2,
 } from 'lucide-react';
-import { formatIndianCurrency, formatIndianNumber } from '../utils/formatters';
+import { formatIndianNumber } from '../utils/formatters';
 import ErrorBoundary from '../components/common/ErrorBoundary';
-import { TableSkeleton } from '../components/common/LoadingSkeleton';
+import CompanyLogo from '../components/common/CompanyLogo';
 
 const POPULAR_SYMBOLS = [
   'NSE:RELIANCE',
@@ -113,74 +114,40 @@ export default function TradePage() {
 
   return (
     <ErrorBoundary>
-      <div style={{ padding: '28px 36px 64px', maxWidth: '1440px', margin: '0 auto' }}>
+      <div className="page-container-wide">
         {/* Page Header */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '16px',
-            marginBottom: '24px',
-            paddingBottom: '20px',
-            borderBottom: '1px solid #1c1c2e',
-          }}
-        >
+        <div className="page-header">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                }}
-              >
-                <Zap size={17} />
-              </div>
-              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
-                Paper Trading Terminal
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <h1 className="page-title">
+                Simulated Trading Desk
               </h1>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                  color: '#818cf8',
-                  border: '1px solid rgba(99, 102, 241, 0.3)',
-                }}
-              >
-                SIMULATED ₹10L
+              <span className="badge badge--accent">
+                PAPER CAPITAL ₹10,00,000
               </span>
             </div>
-            <p style={{ color: '#8888a6', fontSize: '13.5px', margin: 0 }}>
-              Live execution order ticket using real-time Upstox NSE/BSE tick prices with zero real capital risk.
+            <p className="page-subtitle">
+              Simulated order ticket executing against live NSE / BSE market ticks with zero risk to personal capital.
             </p>
           </div>
 
           {/* Virtual Account Balance Pill */}
           <div
+            className="card"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
-              backgroundColor: '#0e0e18',
               padding: '10px 18px',
-              borderRadius: '10px',
-              border: '1px solid #1c1c2e',
+              borderLeft: '3px solid var(--accent)',
             }}
           >
-            <Wallet size={16} color="#818cf8" />
+            <Wallet size={18} color="var(--accent)" />
             <div>
-              <div style={{ fontSize: '11px', color: '#8888a6', fontWeight: 600 }}>AVAILABLE CASH</div>
-              <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>
+              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Available Cash
+              </div>
+              <div className="num-tabular" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 ₹{formatIndianNumber(cashBalance)}
               </div>
             </div>
@@ -188,119 +155,81 @@ export default function TradePage() {
         </div>
 
         {/* Popular Ticker Quick Selector Bar */}
-        <div style={{ marginBottom: '24px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '12px', color: '#686884', fontWeight: 600, marginRight: '4px' }}>
-            QUICK ASSETS:
+        <div style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginRight: '4px' }}>
+            Quick Select:
           </span>
           {POPULAR_SYMBOLS.map((sym) => {
             const isSel = sym.toUpperCase() === selectedSymbol.toUpperCase();
+            const cleanSym = sym.replace('NSE:', '');
             return (
               <button
                 key={sym}
                 onClick={() => handleSelectSymbol(sym)}
-                style={{
-                  padding: '5px 12px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  border: isSel ? '1px solid #6366f1' : '1px solid #1c1c2e',
-                  backgroundColor: isSel ? 'rgba(99, 102, 241, 0.15)' : '#0f0f1c',
-                  color: isSel ? '#a5b4fc' : '#8888a6',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
+                className={`quick-select-chip ${isSel ? 'quick-select-chip--active' : ''}`}
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                {sym.replace('NSE:', '')}
+                <CompanyLogo symbol={cleanSym} size={18} />
+                {cleanSym}
               </button>
             );
           })}
 
           {/* Search/Custom input */}
           <form onSubmit={handleCustomSymbolSubmit} style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 'auto' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: '#0e0e1a',
-                border: '1px solid #24243a',
-                borderRadius: '6px',
-                padding: '4px 10px',
-              }}
-            >
-              <Search size={13} color="#686884" style={{ marginRight: '6px' }} />
+            <div style={{ position: 'relative' }}>
+              <Search size={13} className="input-icon" />
               <input
                 type="text"
                 value={customInput}
                 onChange={(e) => setCustomInput(e.target.value)}
                 placeholder="Symbol (e.g. INFY)"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  outline: 'none',
-                  color: '#ffffff',
-                  fontSize: '12px',
-                  width: '120px',
-                }}
+                className="input input--with-icon"
+                style={{ width: '170px', padding: '6px 10px 6px 32px', fontSize: '12px' }}
               />
             </div>
           </form>
         </div>
 
         {/* 2-Column Terminal Layout: Order Ticket on Left, Position & History on Right */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 460px) 1fr', gap: '24px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 420px) 1fr', gap: '20px', alignItems: 'start' }}>
           {/* Order Ticket Card */}
-          <div
-            style={{
-              backgroundColor: '#0c0c16',
-              borderRadius: '14px',
-              border: '1px solid #1c1c2e',
-              padding: '24px',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-            }}
-          >
+          <div className="card card-padded">
             {/* Live Ticker Header */}
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                marginBottom: '20px',
-                paddingBottom: '16px',
-                borderBottom: '1px solid #181828',
+                marginBottom: '18px',
+                paddingBottom: '14px',
+                borderBottom: '1px solid var(--border)',
               }}
             >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                    {quote?.symbol || selectedSymbol}
-                  </h2>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      backgroundColor: '#1b1b30',
-                      color: '#818cf8',
-                    }}
-                  >
-                    NSE
-                  </span>
-                </div>
-                <div style={{ color: '#8888a6', fontSize: '13px', marginTop: '3px' }}>
-                  {quote?.name || 'Equity Stock'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <CompanyLogo symbol={selectedSymbol.replace('NSE:', '').replace('BSE:', '')} size={42} />
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                      {quote?.symbol || selectedSymbol}
+                    </h2>
+                    <span className="badge badge--accent badge--sm">NSE</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+                    {quote?.name || 'Listed Equity'}
+                  </div>
                 </div>
               </div>
 
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff' }}>
+                <div className="num-tabular" style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
                   ₹{formatIndianNumber(ltp)}
                 </div>
                 <div
+                  className={`num-tabular ${isPositive ? 'text-positive' : 'text-negative'}`}
                   style={{
-                    fontSize: '12.5px',
-                    fontWeight: 700,
-                    color: isPositive ? '#00c076' : '#ff3b57',
+                    fontSize: '12px',
+                    fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -308,7 +237,7 @@ export default function TradePage() {
                     marginTop: '2px',
                   }}
                 >
-                  {isPositive ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                  {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                   <span>
                     {isPositive ? '+' : ''}₹{formatIndianNumber(Math.abs(quote?.change ?? 0))} ({isPositive ? '+' : ''}
                     {(quote?.changePercent ?? 0).toFixed(2)}%)
@@ -318,97 +247,66 @@ export default function TradePage() {
             </div>
 
             {/* Order Type Switcher (BUY vs SELL) */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-                marginBottom: '20px',
-                backgroundColor: '#07070f',
-                padding: '4px',
-                borderRadius: '10px',
-                border: '1px solid #181828',
-              }}
-            >
+            <div className="order-type-switcher" style={{ marginBottom: '16px' }}>
               <button
                 type="button"
                 onClick={() => setOrderType('BUY')}
-                style={{
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: orderType === 'BUY' ? '#00c076' : 'transparent',
-                  color: orderType === 'BUY' ? '#ffffff' : '#8888a6',
-                  transition: 'all 0.15s ease',
-                  boxShadow: orderType === 'BUY' ? '0 2px 12px rgba(0, 192, 118, 0.35)' : 'none',
-                }}
+                className={`order-type-btn ${orderType === 'BUY' ? 'order-type-btn--buy' : ''}`}
               >
-                BUY / LONG
+                <TrendingUp size={13} />
+                <span>BUY / LONG</span>
               </button>
               <button
                 type="button"
                 onClick={() => setOrderType('SELL')}
-                style={{
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: orderType === 'SELL' ? '#ff3b57' : 'transparent',
-                  color: orderType === 'SELL' ? '#ffffff' : '#8888a6',
-                  transition: 'all 0.15s ease',
-                  boxShadow: orderType === 'SELL' ? '0 2px 12px rgba(255, 59, 87, 0.35)' : 'none',
-                }}
+                className={`order-type-btn ${orderType === 'SELL' ? 'order-type-btn--sell' : ''}`}
               >
-                SELL / EXIT
+                <TrendingDown size={13} />
+                <span>SELL / EXIT</span>
               </button>
             </div>
 
             {/* Product Type & Order Type Badges */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               <div
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  backgroundColor: '#121222',
-                  border: '1px solid #222238',
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   textAlign: 'center',
                 }}
               >
-                <div style={{ fontSize: '10.5px', color: '#78789a', fontWeight: 600 }}>PRODUCT</div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#f0f0f5', marginTop: '2px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Product</div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
                   Delivery (CNC)
                 </div>
               </div>
               <div
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  backgroundColor: '#121222',
-                  border: '1px solid #222238',
+                  padding: '8px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   textAlign: 'center',
                 }}
               >
-                <div style={{ fontSize: '10.5px', color: '#78789a', fontWeight: 600 }}>EXECUTION</div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#f0f0f5', marginTop: '2px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Execution</div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
                   Market (LTP)
                 </div>
               </div>
             </div>
 
             {/* Quantity Input */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#a0a0c0' }}>QUANTITY (SHARES)</label>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>Quantity (Shares)</label>
                 {currentPosition && (
-                  <span style={{ fontSize: '12px', color: '#818cf8', fontWeight: 600 }}>
-                    Owned: {currentPosition.quantity} shares
+                  <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600 }}>
+                    Owned: {currentPosition.quantity}
                   </span>
                 )}
               </div>
@@ -417,9 +315,9 @@ export default function TradePage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  backgroundColor: '#07070f',
-                  border: '1px solid #222238',
-                  borderRadius: '8px',
+                  backgroundColor: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)',
                   overflow: 'hidden',
                 }}
               >
@@ -429,40 +327,31 @@ export default function TradePage() {
                   step="1"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  className="num-tabular"
                   style={{
                     flex: 1,
-                    padding: '12px 14px',
+                    padding: '10px 12px',
                     background: 'none',
                     border: 'none',
-                    color: '#ffffff',
-                    fontSize: '16px',
-                    fontWeight: 700,
+                    color: 'var(--text-primary)',
+                    fontSize: '15px',
+                    fontWeight: 600,
                     outline: 'none',
                   }}
                 />
-                <div style={{ padding: '0 14px', color: '#686884', fontSize: '13px', fontWeight: 600 }}>
+                <div style={{ padding: '0 14px', color: 'var(--text-muted)', fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.04em' }}>
                   QTY
                 </div>
               </div>
 
               {/* Quick Stepper Pills */}
-              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+              <div className="qty-stepper" style={{ marginTop: '8px' }}>
                 {quickQtyList.map((num) => (
                   <button
                     key={num}
                     type="button"
                     onClick={() => setQuantity(num)}
-                    style={{
-                      flex: 1,
-                      padding: '5px 0',
-                      borderRadius: '4px',
-                      backgroundColor: quantity === num ? '#22223a' : '#10101c',
-                      border: quantity === num ? '1px solid #6366f1' : '1px solid #1c1c2e',
-                      color: quantity === num ? '#ffffff' : '#8888a6',
-                      fontSize: '11.5px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
+                    className={`qty-stepper-btn ${quantity === num ? 'qty-stepper-btn--active' : ''}`}
                   >
                     +{num}
                   </button>
@@ -473,20 +362,20 @@ export default function TradePage() {
             {/* Cost Breakdown */}
             <div
               style={{
-                backgroundColor: '#090913',
-                borderRadius: '8px',
+                backgroundColor: 'var(--surface)',
+                borderRadius: 'var(--radius-sm)',
                 padding: '14px',
-                border: '1px solid #181828',
-                marginBottom: '20px',
+                border: '1px solid var(--border)',
+                marginBottom: '16px',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12.5px' }}>
-                <span style={{ color: '#8888a6' }}>Est. Execution Price</span>
-                <span style={{ color: '#f0f0fa', fontWeight: 600 }}>₹{formatIndianNumber(ltp)}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Est. Execution Price</span>
+                <span className="num-tabular" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(ltp)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12.5px' }}>
-                <span style={{ color: '#8888a6' }}>Approx Required Capital</span>
-                <span style={{ color: '#ffffff', fontWeight: 700 }}>₹{formatIndianNumber(orderTotal)}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Required Capital</span>
+                <span className="num-tabular" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(orderTotal)}</span>
               </div>
               <div
                 style={{
@@ -494,20 +383,19 @@ export default function TradePage() {
                   justifyContent: 'space-between',
                   fontSize: '12.5px',
                   paddingTop: '8px',
-                  borderTop: '1px solid #181828',
+                  borderTop: '1px solid var(--border-subtle)',
                 }}
               >
-                <span style={{ color: '#8888a6' }}>Virtual Cash After Trade</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Available Cash Post-Trade</span>
                 <span
-                  style={{
-                    color:
-                      orderType === 'BUY'
-                        ? cashBalance - orderTotal >= 0
-                          ? '#00c076'
-                          : '#ff3b57'
-                        : '#00c076',
-                    fontWeight: 700,
-                  }}
+                  className={`num-tabular ${
+                    orderType === 'BUY'
+                      ? cashBalance - orderTotal >= 0
+                        ? 'text-positive'
+                        : 'text-negative'
+                      : 'text-positive'
+                  }`}
+                  style={{ fontWeight: 600 }}
                 >
                   ₹{formatIndianNumber(orderType === 'BUY' ? cashBalance - orderTotal : cashBalance + orderTotal)}
                 </span>
@@ -516,42 +404,16 @@ export default function TradePage() {
 
             {/* Error / Validation Warning */}
             {orderType === 'BUY' && cashBalance < orderTotal && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: 'rgba(255, 59, 87, 0.1)',
-                  border: '1px solid rgba(255, 59, 87, 0.25)',
-                  padding: '10px 12px',
-                  borderRadius: '6px',
-                  color: '#ff3b57',
-                  fontSize: '12px',
-                  marginBottom: '16px',
-                }}
-              >
-                <AlertCircle size={15} />
+              <div className="alert-box alert-box--error" style={{ marginBottom: '14px' }}>
+                <AlertCircle size={14} />
                 <span>Insufficient virtual cash balance for this order.</span>
               </div>
             )}
 
             {orderType === 'SELL' && (!currentPosition || currentPosition.quantity < quantity) && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: 'rgba(255, 59, 87, 0.1)',
-                  border: '1px solid rgba(255, 59, 87, 0.25)',
-                  padding: '10px 12px',
-                  borderRadius: '6px',
-                  color: '#ff3b57',
-                  fontSize: '12px',
-                  marginBottom: '16px',
-                }}
-              >
-                <AlertCircle size={15} />
-                <span>You only own {currentPosition?.quantity || 0} shares of {selectedSymbol}.</span>
+              <div className="alert-box alert-box--error" style={{ marginBottom: '14px' }}>
+                <AlertCircle size={14} />
+                <span>You hold {currentPosition?.quantity || 0} shares of {selectedSymbol}.</span>
               </div>
             )}
 
@@ -560,96 +422,76 @@ export default function TradePage() {
               type="button"
               disabled={!isExecutable || executeMutation.isPending}
               onClick={handleExecute}
+              className={`btn ${orderType === 'BUY' ? 'btn-buy' : 'btn-sell'}`}
               style={{
                 width: '100%',
-                padding: '14px',
-                borderRadius: '8px',
-                fontWeight: 800,
-                fontSize: '14px',
-                letterSpacing: '0.02em',
-                border: 'none',
-                cursor: isExecutable && !executeMutation.isPending ? 'pointer' : 'not-allowed',
-                backgroundColor:
-                  !isExecutable || executeMutation.isPending
-                    ? '#222234'
-                    : orderType === 'BUY'
-                    ? '#00c076'
-                    : '#ff3b57',
-                color: !isExecutable || executeMutation.isPending ? '#686884' : '#ffffff',
-                transition: 'all 0.15s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                boxShadow:
-                  isExecutable && !executeMutation.isPending
-                    ? orderType === 'BUY'
-                      ? '0 4px 20px rgba(0, 192, 118, 0.35)'
-                      : '0 4px 20px rgba(255, 59, 87, 0.35)'
-                    : 'none',
+                padding: '12px',
+                fontSize: '13.5px',
+                letterSpacing: '0.01em',
               }}
             >
               {executeMutation.isPending ? (
-                <span>Executing Order...</span>
+                <span>Submitting Simulated Order...</span>
               ) : (
                 <>
-                  <Zap size={16} />
+                  <Zap size={15} />
                   <span>
-                    {orderType} {quantity} SHARES • ₹{formatIndianNumber(orderTotal)}
+                    Execute {orderType} Order • ₹{formatIndianNumber(orderTotal)}
                   </span>
                 </>
               )}
             </button>
 
-            {/* Security note */}
+            {/* Simulated note */}
             <div
               style={{
-                marginTop: '16px',
+                marginTop: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                color: '#555570',
+                color: 'var(--text-muted)',
                 fontSize: '11px',
               }}
             >
-              <ShieldCheck size={13} />
-              <span>Simulated Execution • Real-time Upstox Feed • No actual funds used</span>
+              <ShieldCheck size={13} color="var(--accent)" />
+              <span>Simulated Execution • Live Upstox Data • No Capital Risk</span>
             </div>
           </div>
 
           {/* Right Column: Active Position Card & Order History Table */}
-          <div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Active Position for this symbol if held */}
             {currentPosition && (
               <div
+                className="card card-padded"
                 style={{
-                  backgroundColor: '#0c0c16',
-                  borderRadius: '12px',
-                  border: '1px solid #1c1c2e',
-                  padding: '18px 22px',
-                  marginBottom: '20px',
                   display: 'flex',
                   flexWrap: 'wrap',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '16px',
+                  borderLeft: currentPosition.unrealizedPL >= 0 ? '3px solid var(--positive)' : '3px solid var(--negative)',
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '11px', color: '#8888a6', fontWeight: 600 }}>CURRENT HOLDING</div>
-                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', marginTop: '2px' }}>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Active Holding ({currentPosition.symbol})
+                  </div>
+                  <div className="num-tabular" style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '2px' }}>
                     {currentPosition.quantity} Shares @ avg ₹{formatIndianNumber(currentPosition.avgPrice)}
                   </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '11px', color: '#8888a6', fontWeight: 600 }}>UNREALIZED P&L</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Unrealized P&L
+                  </div>
                   <div
+                    className={`num-tabular ${currentPosition.unrealizedPL >= 0 ? 'text-positive' : 'text-negative'}`}
                     style={{
-                      fontSize: '16px',
-                      fontWeight: 800,
-                      color: currentPosition.unrealizedPL >= 0 ? '#00c076' : '#ff3b57',
+                      fontSize: '15px',
+                      fontWeight: 600,
                       marginTop: '2px',
                     }}
                   >
@@ -661,168 +503,89 @@ export default function TradePage() {
 
                 <button
                   onClick={() => navigate('/portfolio')}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
-                    borderRadius: '6px',
-                    backgroundColor: '#16162a',
-                    color: '#818cf8',
-                    border: '1px solid #282848',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-secondary"
+                  style={{ padding: '6px 12px', fontSize: '12px' }}
                 >
-                  <span>View Portfolio</span>
-                  <ArrowRight size={13} />
+                  <span>View in Portfolio</span>
+                  <ArrowRight size={12} />
                 </button>
               </div>
             )}
 
             {/* Order History Table */}
-            <div
-              style={{
-                backgroundColor: '#0c0c16',
-                borderRadius: '14px',
-                border: '1px solid #1c1c2e',
-                overflow: 'hidden',
-              }}
-            >
+            <div className="card" style={{ overflow: 'hidden' }}>
               <div
                 style={{
-                  padding: '16px 20px',
-                  borderBottom: '1px solid #1c1c2e',
+                  padding: '12px 18px',
+                  borderBottom: '1px solid var(--border)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  backgroundColor: 'var(--surface)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Clock size={16} color="#818cf8" />
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-                    Executed Paper Orders
-                  </h3>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      backgroundColor: '#1b1b30',
-                      color: '#8888aa',
-                    }}
-                  >
-                    {orders.length}
-                  </span>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Clock size={14} color="var(--accent)" />
+                  <span>Simulated Order Audit Log ({orders.length})</span>
                 </div>
-
                 <button
                   onClick={() => refetchOrders()}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#8888a6',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                  }}
+                  title="Refresh orders"
+                  className="btn btn-ghost"
+                  style={{ padding: '4px 8px', fontSize: '11px', gap: '4px' }}
                 >
-                  <RefreshCw size={13} /> Refresh
+                  <RefreshCw size={11} />
+                  <span>Refresh</span>
                 </button>
               </div>
 
-              {isOrdersLoading ? (
-                <div style={{ padding: '16px' }}>
-                  <TableSkeleton rows={4} />
-                </div>
-              ) : orders.length === 0 ? (
-                <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-                  <Zap size={32} color="#333348" style={{ marginBottom: '10px' }} />
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#8888a6' }}>No orders executed yet</div>
-                  <div style={{ fontSize: '12px', color: '#555570', marginTop: '4px' }}>
-                    Use the order ticket on the left to execute your first simulated trade.
+              {orders.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-title">No executed paper orders yet</div>
+                  <div className="empty-state-description">
+                    Use the order ticket on the left to submit simulated trades against live quotes.
                   </div>
                 </div>
               ) : (
                 <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                  <table className="data-table">
                     <thead>
-                      <tr style={{ borderBottom: '1px solid #181828', color: '#686884', fontSize: '11.5px' }}>
-                        <th style={{ padding: '12px 18px', fontWeight: 600 }}>SIDE</th>
-                        <th style={{ padding: '12px 18px', fontWeight: 600 }}>SYMBOL</th>
-                        <th style={{ padding: '12px 18px', fontWeight: 600 }}>QUANTITY</th>
-                        <th style={{ padding: '12px 18px', fontWeight: 600 }}>PRICE</th>
-                        <th style={{ padding: '12px 18px', fontWeight: 600 }}>TOTAL VALUE</th>
-                        <th style={{ padding: '12px 18px', fontWeight: 600 }}>STATUS</th>
-                        <th style={{ padding: '12px 18px', fontWeight: 600 }}>TIME</th>
+                      <tr>
+                        <th>TIME</th>
+                        <th>INSTRUMENT</th>
+                        <th>SIDE</th>
+                        <th style={{ textAlign: 'right' }}>QTY</th>
+                        <th style={{ textAlign: 'right' }}>EXEC PRICE</th>
+                        <th style={{ textAlign: 'right' }}>VALUE</th>
+                        <th style={{ textAlign: 'center' }}>STATUS</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((ord, idx) => {
-                        const isBuy = ord.type === 'BUY';
-                        const timeStr = ord.timestamp
-                          ? new Date(ord.timestamp).toLocaleTimeString('en-IN', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              second: '2-digit',
-                            })
-                          : '—';
-
+                      {orders.map((o) => {
+                        const isBuy = o.type === 'BUY';
+                        const timeStr = o.createdAt
+                          ? new Date(o.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+                          : '--';
                         return (
-                          <tr
-                            key={ord.id || idx}
-                            style={{
-                              borderBottom: '1px solid #141424',
-                              transition: 'background-color 0.15s ease',
-                              cursor: 'pointer',
-                            }}
-                            onClick={() => handleSelectSymbol(ord.symbol)}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#121222')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                          >
-                            <td style={{ padding: '12px 18px' }}>
-                              <span
-                                style={{
-                                  fontSize: '11px',
-                                  fontWeight: 800,
-                                  padding: '2px 6px',
-                                  borderRadius: '4px',
-                                  backgroundColor: isBuy ? 'rgba(0, 192, 118, 0.15)' : 'rgba(255, 59, 87, 0.15)',
-                                  color: isBuy ? '#00c076' : '#ff3b57',
-                                }}
-                              >
-                                {ord.type}
+                          <tr key={o.id}>
+                            <td style={{ color: 'var(--text-muted)' }}>{timeStr}</td>
+                            <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{o.symbol}</td>
+                            <td>
+                              <span className={`badge ${isBuy ? 'badge--positive' : 'badge--negative'}`}>
+                                {o.type}
                               </span>
                             </td>
-                            <td style={{ padding: '12px 18px', fontWeight: 700, color: '#f0f0f8' }}>
-                              {ord.symbol}
+                            <td className="num-tabular" style={{ textAlign: 'right', color: 'var(--text-primary)' }}>{o.quantity}</td>
+                            <td className="num-tabular" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>₹{formatIndianNumber(o.price)}</td>
+                            <td className="num-tabular" style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)' }}>
+                              ₹{formatIndianNumber(o.price * o.quantity)}
                             </td>
-                            <td style={{ padding: '12px 18px', color: '#c0c0d8' }}>{ord.quantity}</td>
-                            <td style={{ padding: '12px 18px', color: '#ffffff', fontWeight: 600 }}>
-                              ₹{formatIndianNumber(ord.price)}
-                            </td>
-                            <td style={{ padding: '12px 18px', color: '#ffffff', fontWeight: 700 }}>
-                              ₹{formatIndianNumber(ord.totalValue)}
-                            </td>
-                            <td style={{ padding: '12px 18px' }}>
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  fontSize: '11px',
-                                  color: '#00c076',
-                                  fontWeight: 700,
-                                }}
-                              >
-                                <CheckCircle2 size={12} /> {ord.status || 'FILLED'}
+                            <td style={{ textAlign: 'center' }}>
+                              <span className="badge badge--positive">
+                                <CheckCircle2 size={10} />
+                                EXECUTED
                               </span>
                             </td>
-                            <td style={{ padding: '12px 18px', color: '#787898', fontSize: '12px' }}>{timeStr}</td>
                           </tr>
                         );
                       })}

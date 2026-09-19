@@ -27,10 +27,11 @@ export async function requireAuth(req, res, next) {
     }
 
     // Attach user to request
+    req.userId = user.id;
     req.user = {
       id: user.id,
       email: user.email,
-      displayName: user.user_metadata?.display_name || user.email?.split('@')[0],
+      displayName: user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0],
       metadata: user.user_metadata || {},
     };
 
@@ -51,10 +52,11 @@ export async function optionalAuth(req, res, next) {
       if (token) {
         const { data: { user } } = await supabaseAdmin.auth.getUser(token);
         if (user) {
+          req.userId = user.id;
           req.user = {
             id: user.id,
             email: user.email,
-            displayName: user.user_metadata?.display_name || user.email?.split('@')[0],
+            displayName: user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0],
             metadata: user.user_metadata || {},
           };
         }

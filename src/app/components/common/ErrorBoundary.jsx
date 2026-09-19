@@ -1,50 +1,34 @@
 // ROADMAP: Section 5 — Empty State & Error Boundary
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React from 'react';
 import { AlertTriangle, Inbox, RefreshCw } from 'lucide-react';
 
 export function EmptyState({ title = 'No data available', message = 'Check back during market hours or adjust your filters', actionText, onAction }) {
   return (
-    <div
-      style={{
-        padding: '48px 24px',
-        textAlign: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '12px',
-        color: '#a0a0b8',
-      }}
-    >
+    <div className="empty-state">
       <div
         style={{
           width: '48px',
           height: '48px',
           borderRadius: '50%',
-          backgroundColor: '#1a1a28',
+          backgroundColor: 'var(--card)',
+          border: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#606078',
+          color: 'var(--text-muted)',
+          margin: '0 auto 14px',
         }}
       >
         <Inbox size={22} />
       </div>
-      <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#f0f0f5' }}>{title}</h4>
-      <p style={{ fontSize: '13px', maxWidth: '360px', lineHeight: 1.5 }}>{message}</p>
+      <h4 className="empty-state-title">{title}</h4>
+      <p className="empty-state-description">{message}</p>
       {actionText && onAction && (
         <button
           onClick={onAction}
-          style={{
-            marginTop: '8px',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            backgroundColor: '#3366ff',
-            color: '#fff',
-            fontSize: '13px',
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
+          className="btn btn-primary"
+          style={{ marginTop: '8px' }}
         >
           {actionText}
         </button>
@@ -71,13 +55,11 @@ export class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div
+          className="card card-padded"
           style={{
-            padding: '32px 24px',
             margin: '20px 0',
-            borderRadius: '12px',
-            backgroundColor: 'rgba(255, 23, 68, 0.08)',
-            border: '1px solid rgba(255, 23, 68, 0.3)',
-            color: '#f0f0f5',
+            backgroundColor: 'var(--negative-muted)',
+            borderColor: 'var(--negative-border)',
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
@@ -85,25 +67,15 @@ export class ErrorBoundary extends React.Component {
             gap: '12px',
           }}
         >
-          <AlertTriangle size={28} color="#ff1744" />
-          <h4 style={{ fontSize: '16px', fontWeight: 600 }}>Something went wrong</h4>
-          <p style={{ fontSize: '13px', color: '#a0a0b8', maxWidth: '400px' }}>
+          <AlertTriangle size={32} color="var(--negative)" />
+          <h4 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Something went wrong</h4>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '420px', margin: 0 }}>
             {this.state.error?.message || 'An unexpected error occurred while rendering this component.'}
           </p>
           <button
-            onClick={() => this.setState({ hasError: false })}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              backgroundColor: '#1e1e30',
-              border: '1px solid #2a2a44',
-              color: '#f0f0f5',
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="btn btn-secondary"
+            style={{ marginTop: '6px' }}
           >
             <RefreshCw size={14} />
             <span>Try Again</span>

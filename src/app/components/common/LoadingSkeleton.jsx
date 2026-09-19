@@ -1,17 +1,15 @@
 // ROADMAP: Section 5 — Loading Skeleton Component
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React from 'react';
 
-export function Skeleton({ width = '100%', height = '20px', borderRadius = '6px', style = {} }) {
+export function Skeleton({ width = '100%', height = '20px', borderRadius = 'var(--radius-sm)', style = {} }) {
   return (
     <div
+      className="skeleton"
       style={{
         width,
         height,
         borderRadius,
-        backgroundColor: '#1a1a28',
-        backgroundImage: 'linear-gradient(90deg, #1a1a28 0%, #222236 50%, #1a1a28 100%)',
-        backgroundSize: '200% 100%',
-        animation: 'pulseGlow 1.5s ease-in-out infinite',
         ...style,
       }}
     />
@@ -21,11 +19,8 @@ export function Skeleton({ width = '100%', height = '20px', borderRadius = '6px'
 export function CardSkeleton() {
   return (
     <div
+      className="card card-padded"
       style={{
-        padding: '20px',
-        borderRadius: '12px',
-        backgroundColor: '#12121a',
-        border: '1px solid #1e1e30',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
@@ -46,27 +41,25 @@ export function CardSkeleton() {
 
 export function TableSkeleton({ rows = 5 }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
+          className="card"
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '12px 14px',
-            borderRadius: '8px',
-            backgroundColor: '#12121a',
-            border: '1px solid #1e1e30',
+            padding: '12px 16px',
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <Skeleton width="110px" height="14px" />
-            <Skeleton width="70px" height="12px" />
+            <Skeleton width="120px" height="14px" />
+            <Skeleton width="80px" height="12px" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-            <Skeleton width="80px" height="16px" />
-            <Skeleton width="50px" height="12px" />
+            <Skeleton width="90px" height="16px" />
+            <Skeleton width="55px" height="12px" />
           </div>
         </div>
       ))}
@@ -77,15 +70,12 @@ export function TableSkeleton({ rows = 5 }) {
 export function ChartSkeleton({ height = '460px' }) {
   return (
     <div
+      className="card card-padded"
       style={{
         width: '100%',
         height,
-        borderRadius: '16px',
-        backgroundColor: '#0d0d16',
-        border: '1px solid #1e1e32',
         display: 'flex',
         flexDirection: 'column',
-        padding: '20px',
         gap: '16px',
       }}
     >

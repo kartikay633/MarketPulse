@@ -1,8 +1,9 @@
 // ROADMAP: Section 5 & 10 — AIInsightPanel Component
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAIStockInsight } from '../../hooks/useAI';
-import { Sparkles, TrendingUp, TrendingDown, ArrowRight, ShieldCheck, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, ShieldCheck, Activity, Cpu } from 'lucide-react';
 import { Skeleton } from '../common/LoadingSkeleton';
 
 export default function AIInsightPanel({ symbol }) {
@@ -11,20 +12,10 @@ export default function AIInsightPanel({ symbol }) {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          padding: '20px',
-          borderRadius: '16px',
-          backgroundColor: '#0d0d16',
-          border: '1px solid #1e1e32',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-        }}
-      >
+      <div className="card card-padded" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <Skeleton width="160px" height="20px" />
-          <Skeleton width="70px" height="18px" borderRadius="10px" />
+          <Skeleton width="70px" height="18px" borderRadius="4px" />
         </div>
         <Skeleton width="100%" height="45px" />
         <Skeleton width="85%" height="16px" />
@@ -37,30 +28,7 @@ export default function AIInsightPanel({ symbol }) {
   const isBearish = sentiment === 'bearish';
 
   return (
-    <div
-      style={{
-        backgroundColor: '#0d0d16',
-        borderRadius: '16px',
-        border: '1px solid #24243a',
-        padding: '22px',
-        position: 'relative',
-        overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
-      }}
-    >
-      {/* Ambient background glow */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '180px',
-          height: '180px',
-          background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0,0,0,0) 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-
+    <div className="card card-padded">
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -68,47 +36,29 @@ export default function AIInsightPanel({ symbol }) {
             style={{
               width: '28px',
               height: '28px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #4f46e5, #818cf8)',
+              borderRadius: 'var(--radius-xs)',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ffffff',
+              color: 'var(--accent)',
             }}
           >
-            <Sparkles size={15} />
+            <Cpu size={15} />
           </div>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-            Pulse AI Stock Insights
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+            Pulse Research • AI Synthesis
           </h3>
         </div>
 
         <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            padding: '3px 9px',
-            borderRadius: '6px',
-            backgroundColor: isBullish
-              ? 'rgba(0, 192, 118, 0.15)'
-              : isBearish
-              ? 'rgba(255, 59, 87, 0.15)'
-              : 'rgba(99, 102, 241, 0.15)',
-            color: isBullish ? '#00c076' : isBearish ? '#ff3b57' : '#818cf8',
-            border: `1px solid ${
-              isBullish
-                ? 'rgba(0, 192, 118, 0.3)'
-                : isBearish
-                ? 'rgba(255, 59, 87, 0.3)'
-                : 'rgba(99, 102, 241, 0.3)'
-            }`,
-            textTransform: 'uppercase',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-          }}
+          className={`badge ${
+            isBullish ? 'badge--positive' : isBearish ? 'badge--negative' : 'badge--accent'
+          }`}
+          style={{ textTransform: 'uppercase' }}
         >
-          {isBullish ? <TrendingUp size={12} /> : isBearish ? <TrendingDown size={12} /> : <Activity size={12} />}
+          {isBullish ? <TrendingUp size={11} /> : isBearish ? <TrendingDown size={11} /> : <Activity size={11} />}
           {sentiment}
         </span>
       </div>
@@ -116,13 +66,13 @@ export default function AIInsightPanel({ symbol }) {
       {/* Insight Narrative */}
       <div
         style={{
-          padding: '14px 16px',
-          backgroundColor: '#12121e',
-          borderRadius: '10px',
-          border: '1px solid #1f1f33',
-          marginBottom: '14px',
+          padding: '12px 14px',
+          backgroundColor: 'var(--surface)',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--border-subtle)',
+          marginBottom: '12px',
           fontSize: '13px',
-          color: '#d4d4e8',
+          color: 'var(--text-primary)',
           lineHeight: 1.6,
         }}
       >
@@ -131,16 +81,16 @@ export default function AIInsightPanel({ symbol }) {
 
       {/* Technical Note / Key Factor */}
       {insight?.technicalNote && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#a0a0c0', marginBottom: '14px' }}>
-          <strong style={{ color: '#818cf8' }}>Technical Note:</strong>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
+          <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>Technical Factor:</strong>
           <span>{insight.technicalNote}</span>
         </div>
       )}
 
       {/* Action Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <span style={{ fontSize: '11px', color: '#686884', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <ShieldCheck size={12} /> Verified Upstox & Marketaux data
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <ShieldCheck size={12} color="var(--positive)" /> Grounded on Upstox & Marketaux data
         </span>
         <button
           onClick={() => navigate(`/ai?q=Deep%20dive%20into%20${encodeURIComponent(symbol)}`)}
@@ -150,14 +100,14 @@ export default function AIInsightPanel({ symbol }) {
             gap: '5px',
             background: 'none',
             border: 'none',
-            color: '#818cf8',
+            color: 'var(--accent)',
             fontWeight: 600,
-            fontSize: '12.5px',
+            fontSize: '12px',
             cursor: 'pointer',
             padding: 0,
           }}
         >
-          <span>Ask Pulse AI about {symbol}</span>
+          <span>Terminal Query for {symbol}</span>
           <ArrowRight size={13} />
         </button>
       </div>

@@ -15,6 +15,31 @@ export const useAuthStore = create((set, get) => ({
   initialize: async () => {
     try {
       set({ isLoading: true, error: null });
+
+      // Handle OAuth PKCE callback if code is in URL search params
+      const searchParams = new URLSearchParams(window.location.search);
+      const code = searchParams.get('code');
+      if (code) {
+        try {
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            console.warn('OAuth code exchange warning in initialize:', exchangeError.message);
+          } else if (data?.session) {
+            set({
+              user: data.session.user,
+              session: data.session,
+              isAuthenticated: true,
+            });
+            await get().fetchProfile();
+            window.history.replaceState({}, document.title, window.location.pathname);
+            set({ isLoading: false });
+            return;
+          }
+        } catch (exchangeErr) {
+          console.warn('Code exchange caught error in initialize:', exchangeErr);
+        }
+      }
+
       const { data: { session }, error } = await supabase.auth.getSession();
 
       if (error) throw error;
@@ -130,15 +155,21 @@ export const useAuthStore = create((set, get) => ({
   // Google OAuth Login
   loginWithGoogle: async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      set({ isLoading: true, error: null });
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account',
+          },
         },
       });
       if (error) throw error;
+      return data;
     } catch (err) {
-      set({ error: err.message });
+      set({ error: err.message, isLoading: false });
       throw err;
     }
   },

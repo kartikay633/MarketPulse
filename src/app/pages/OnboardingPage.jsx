@@ -1,29 +1,30 @@
 // ROADMAP: Section 5 & Phase 1 — Onboarding Flow
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { ArrowRight, CheckCircle2, TrendingUp, BarChart3, Award, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowRight, TrendingUp, BarChart3, Award, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const EXPERIENCE_LEVELS = [
   {
     id: 'beginner',
     title: 'Beginner',
-    desc: 'New to Indian equity markets. Interested in NIFTY 50, basic metrics, and simulated paper trading.',
-    icon: Sparkles,
+    desc: 'Exploring Indian equities, NIFTY 50 benchmark metrics, and simulated paper trading.',
+    icon: BarChart3,
     badge: 'Standard Starter',
   },
   {
     id: 'intermediate',
     title: 'Intermediate',
-    desc: 'Regularly follow Indian stocks, technical candlestick charts, earnings reports, and sector trends.',
+    desc: 'Regularly tracking NSE / BSE tickers, candlestick charts, quarterly disclosures, and sector momentum.',
     icon: TrendingUp,
     badge: 'Active Investor',
   },
   {
     id: 'advanced',
-    title: 'Advanced / Pro',
-    desc: 'Experienced trader interested in market breadth, volume spikes, valuation multiples, and speed.',
+    title: 'Advanced / Institutional',
+    desc: 'Analyzing market breadth, order flow, valuation metrics, and cross-asset correlation.',
     icon: Award,
     badge: 'Market Veteran',
   },
@@ -44,7 +45,7 @@ const SECTOR_OPTIONS = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { profile, updateProfile } = useAuthStore();
+  const { updateProfile } = useAuthStore();
 
   const [step, setStep] = useState(1);
   const [experienceLevel, setExperienceLevel] = useState('intermediate');
@@ -69,7 +70,7 @@ export default function OnboardingPage() {
       });
 
       if (res.success) {
-        toast.success('Market Pulse configured for your profile');
+        toast.success('Market Pulse configured for your terminal');
         navigate('/dashboard');
       } else {
         toast.error('Failed to save preferences');
@@ -82,56 +83,41 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        width: '100vw',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#0a0a0f',
-        backgroundImage: 'radial-gradient(ellipse at 50% -10%, rgba(51, 102, 255, 0.2), transparent 70%)',
-        padding: '24px',
-      }}
-    >
+    <div className="auth-layout">
       <div
+        className="card"
         style={{
           width: '100%',
-          maxWidth: '680px',
-          background: 'rgba(18, 18, 26, 0.9)',
-          border: '1px solid rgba(42, 42, 68, 0.8)',
-          borderRadius: '20px',
-          padding: '40px',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)',
-          backdropFilter: 'blur(24px)',
+          maxWidth: '640px',
+          padding: '36px',
+          boxShadow: 'var(--shadow-elevated)',
         }}
       >
         {/* Step Indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
           <div>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#3366ff', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <span className="badge badge--accent badge--sm" style={{ letterSpacing: '0.05em' }}>
               STEP {step} OF 2
             </span>
-            <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#f0f0f5', marginTop: '4px' }}>
-              {step === 1 ? 'Select Your Market Experience' : 'Choose Your Focus Sectors'}
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '6px', margin: 0 }}>
+              {step === 1 ? 'Configure Trading Profile' : 'Select Primary Sectors'}
             </h2>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '6px' }}>
             <div
               style={{
-                width: '36px',
-                height: '4px',
+                width: '32px',
+                height: '3px',
                 borderRadius: '2px',
-                background: '#3366ff',
+                backgroundColor: 'var(--accent)',
               }}
             />
             <div
               style={{
-                width: '36px',
-                height: '4px',
+                width: '32px',
+                height: '3px',
                 borderRadius: '2px',
-                background: step === 2 ? '#3366ff' : 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: step === 2 ? 'var(--accent)' : 'var(--border)',
               }}
             />
           </div>
@@ -140,7 +126,7 @@ export default function OnboardingPage() {
         {/* STEP 1: Experience Level */}
         {step === 1 && (
           <div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
               {EXPERIENCE_LEVELS.map((lvl) => {
                 const isSelected = experienceLevel === lvl.id;
                 const Icon = lvl.icon;
@@ -148,162 +134,115 @@ export default function OnboardingPage() {
                   <div
                     key={lvl.id}
                     onClick={() => setExperienceLevel(lvl.id)}
+                    className="card"
                     style={{
-                      padding: '18px 20px',
-                      borderRadius: '12px',
-                      background: isSelected ? 'rgba(51, 102, 255, 0.12)' : 'rgba(26, 26, 40, 0.6)',
-                      border: `1.5px solid ${isSelected ? '#3366ff' : 'rgba(42, 42, 68, 0.8)'}`,
+                      padding: '16px 18px',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: isSelected ? 'var(--card-hover)' : 'var(--surface)',
+                      borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '16px',
-                      transition: 'all 0.2s ease',
-                      boxShadow: isSelected ? '0 0 20px rgba(51, 102, 255, 0.2)' : 'none',
+                      gap: '14px',
+                      boxShadow: isSelected ? '0 0 16px var(--accent-glow)' : 'none',
                     }}
                   >
                     <div
                       style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '10px',
-                        background: isSelected ? '#3366ff' : 'rgba(42, 42, 68, 0.6)',
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--card)',
+                        border: '1px solid var(--border)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: isSelected ? '#fff' : '#a0a0b8',
+                        color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
+                        flexShrink: 0,
                       }}
                     >
-                      <Icon size={20} />
+                      <Icon size={18} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '15px', fontWeight: 600, color: '#f0f0f5' }}>{lvl.title}</span>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            color: isSelected ? '#27c8ff' : '#606078',
-                            background: isSelected ? 'rgba(39, 200, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                          }}
-                        >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{lvl.title}</span>
+                        <span className="badge badge--sm" style={{ color: isSelected ? 'var(--accent)' : 'var(--text-muted)' }}>
                           {lvl.badge}
                         </span>
                       </div>
-                      <p style={{ fontSize: '12px', color: '#a0a0b8', marginTop: '4px', lineHeight: 1.4 }}>
+                      <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
                         {lvl.desc}
                       </p>
                     </div>
-                    {isSelected && <CheckCircle2 size={20} color="#3366ff" />}
                   </div>
                 );
               })}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setStep(2)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  background: '#3366ff',
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: 'none',
-                }}
-              >
-                <span>Continue</span>
-                <ArrowRight size={16} />
-              </button>
-            </div>
+            <button
+              onClick={() => setStep(2)}
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '12px' }}
+            >
+              <span>Continue to Sectors</span>
+              <ArrowRight size={14} />
+            </button>
           </div>
         )}
 
         {/* STEP 2: Sectors */}
         {step === 2 && (
           <div>
-            <p style={{ fontSize: '13px', color: '#a0a0b8', marginBottom: '20px' }}>
-              Select the industry sectors you follow most closely. We'll customize your pulse feeds, news, and default watchlist cards accordingly.
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '18px', marginTop: 0 }}>
+              Select sectors you wish to track prominently on your terminal dashboard.
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '36px' }}>
-              {SECTOR_OPTIONS.map((sec) => {
-                const isSelected = selectedSectors.includes(sec);
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px', marginBottom: '28px' }}>
+              {SECTOR_OPTIONS.map((sector) => {
+                const isSelected = selectedSectors.includes(sector);
                 return (
                   <button
-                    key={sec}
+                    key={sector}
                     type="button"
-                    onClick={() => toggleSector(sec)}
+                    onClick={() => toggleSector(sector)}
+                    className={`chip ${isSelected ? 'chip--selected' : ''}`}
                     style={{
-                      padding: '10px 16px',
-                      borderRadius: '9999px',
-                      background: isSelected ? 'rgba(51, 102, 255, 0.15)' : 'rgba(26, 26, 40, 0.6)',
-                      border: `1px solid ${isSelected ? '#3366ff' : 'rgba(42, 42, 68, 0.8)'}`,
-                      color: isSelected ? '#3366ff' : '#a0a0b8',
-                      fontSize: '13px',
+                      padding: '10px 14px',
+                      fontSize: '12px',
                       fontWeight: isSelected ? 600 : 400,
+                      textAlign: 'left',
                       cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
                     }}
                   >
-                    {isSelected && <span style={{ color: '#00c853' }}>●</span>}
-                    <span>{sec}</span>
+                    {sector}
                   </button>
                 );
               })}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#a0a0b8',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                }}
+                className="btn btn-secondary"
+                style={{ padding: '11px 20px' }}
               >
-                &larr; Back
+                Back
               </button>
-
               <button
+                type="button"
                 onClick={handleFinish}
                 disabled={isSubmitting}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 28px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #2563eb, #3366ff)',
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                  border: 'none',
-                  boxShadow: '0 4px 16px rgba(51, 102, 255, 0.4)',
-                }}
+                className="btn btn-primary"
+                style={{ flex: 1, padding: '11px' }}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                     <span>Configuring Terminal...</span>
                   </>
                 ) : (
-                  <>
-                    <span>Enter Market Pulse</span>
-                    <ArrowRight size={16} />
-                  </>
+                  <span>Launch Market Pulse Terminal</span>
                 )}
               </button>
             </div>

@@ -1,39 +1,30 @@
-// ROADMAP: Section 3 & 5 — AppLayout Component
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import MarketTickerTape from '../components/market/MarketTickerTape';
+import FloatingAIWidget from '../components/ai/FloatingAIWidget';
 
 export default function AppLayout() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        minHeight: '100vh',
-        width: '100vw',
-        backgroundColor: '#0a0a0f',
-        color: '#f0f0f5',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="app-layout">
       {/* Persistent Left Sidebar */}
       <Sidebar />
 
-      {/* Main Right Area */}
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          overflowY: 'auto',
-        }}
-      >
-        <TopBar />
-        <main style={{ flex: 1, padding: '24px 28px', maxWidth: '1600px', width: '100%', margin: '0 auto' }}>
+      {/* Main Content Area */}
+      <div className="app-main-wrapper">
+        {/* Persistent Sticky Terminal Header (TopBar + Live NSE/BSE Feed) */}
+        <div className="app-header-area">
+          <TopBar />
+          <MarketTickerTape />
+        </div>
+        <main className="app-main-content">
           <Outlet />
         </main>
       </div>
+
+      {/* Flagship Floating Pulse AI Assistant */}
+      <FloatingAIWidget />
     </div>
   );
 }

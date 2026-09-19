@@ -1,16 +1,20 @@
 // ROADMAP: Section 5 & 10 — Pulse AI Conversational Terminal Page
+// Institutional Research Desk — Exact Market Pulse Design System
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAIChat } from '../hooks/useAI';
-import { Sparkles, Send, Bot, User, ShieldAlert, CornerDownLeft, RefreshCw, Zap } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Send, User, RefreshCw, Cpu, ShieldCheck, Terminal } from 'lucide-react';
 import ErrorBoundary from '../components/common/ErrorBoundary';
+import '../styles/markdown.css';
 
 const SUGGESTIONS = [
-  'How is NIFTY 50 performing today?',
-  'Analyze Reliance Industries price action',
-  'What drove IT sector stocks higher?',
-  'Explain Tata Motors technical positioning',
-  'What is INDIA VIX telling us about volatility?',
+  'NIFTY 50 market breadth & regime today',
+  'Reliance Industries technical & price action breakdown',
+  'What is driving banking sector momentum?',
+  'INDIA VIX volatility signals for Indian equities',
+  'Tata Motors multi-timeframe analysis',
 ];
 
 export default function AIPage() {
@@ -23,16 +27,16 @@ export default function AIPage() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: `### Welcome to **Pulse AI** ⚡
+      content: `### Market Pulse Institutional Intelligence Desk
 
-I am your real-time institutional equity co-pilot for the Indian stock market (NSE & BSE).
+Connected to live NSE / BSE market telemetry and Gemini 1.5 Flash synthesis engine.
 
-Every answer I provide is grounded in verified, live market data:
-- Real-time **LTP, Day Range & 52-Week Bands** from Upstox
-- **Market Breadth & Sector Trends** across Indian indices
-- Verified **Financial News & Corporate Disclosures**
+**Capabilities:**
+- **Market Telemetry:** Real-time LTP, Day Ranges, 52-Week Bands, and Sector Breadth
+- **Driver Analysis:** Cross-referencing price action with recent corporate news and macroeconomic catalysts
+- **Risk Context:** Assessing volatility regimes (INDIA VIX) and sector concentration risks
 
-What would you like to analyze today?`,
+Enter an Indian equity ticker, index, or macroeconomic inquiry below to begin terminal analysis.`,
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -78,7 +82,7 @@ What would you like to analyze today?`,
           const assistantMsg = {
             id: `ai-${Date.now()}`,
             role: 'assistant',
-            content: data.reply || 'Analysis complete.',
+            content: data.reply || 'Analysis completed.',
             timestamp: data.timestamp || new Date().toISOString(),
           };
           setMessages((prev) => [...prev, assistantMsg]);
@@ -87,7 +91,7 @@ What would you like to analyze today?`,
           const errorMsg = {
             id: `err-${Date.now()}`,
             role: 'assistant',
-            content: 'Unable to connect to intelligence server. Please verify your connection or try again.',
+            content: 'Unable to communicate with the intelligence server. Verify API configuration and network connectivity.',
             timestamp: new Date().toISOString(),
           };
           setMessages((prev) => [...prev, errorMsg]);
@@ -105,207 +109,103 @@ What would you like to analyze today?`,
 
   return (
     <ErrorBoundary>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: 'calc(100vh - 64px)',
-          backgroundColor: '#090910',
-          position: 'relative',
-        }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)', backgroundColor: 'var(--background)', position: 'relative' }}>
         {/* Top Intelligence Header */}
-        <div
-          style={{
-            padding: '16px 28px',
-            borderBottom: '1px solid #1e1e30',
-            backgroundColor: '#0d0d16',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
+        <div className="ai-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img
+              src="/pulse_ai_core.jpg"
+              alt="Pulse AI Core"
               style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #4f46e5, #818cf8)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '1.5px solid rgba(59, 130, 246, 0.6)',
+                boxShadow: '0 0 16px rgba(59, 130, 246, 0.5)',
               }}
-            >
-              <Sparkles size={17} />
-            </div>
+            />
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff' }}>
-                  Pulse AI Market Assistant
+                <span style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  Pulse AI Quantitative Desk
                 </span>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    backgroundColor: '#1b1b30',
-                    color: '#818cf8',
-                    border: '1px solid #282845',
-                  }}
-                >
-                  LIVE DATA GROUNDED
+                <span className="badge badge--accent badge--sm">
+                  QUANTUM FINTECH CORE
                 </span>
               </div>
-              <div style={{ fontSize: '11.5px', color: '#717192', marginTop: '1px' }}>
-                Powered by Gemini 1.5 Flash • Connected to live Upstox NSE/BSE feeds
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
+                Gemini 1.5 Flash • Connected to live Upstox NSE / BSE telemetry
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button
-              onClick={() => {
-                setMessages([messages[0]]);
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: '#141422',
-                border: '1px solid #232338',
-                color: '#8b8ba8',
-                fontSize: '12px',
-                cursor: 'pointer',
-              }}
-            >
-              <RefreshCw size={12} />
-              <span>New Conversation</span>
-            </button>
-          </div>
+          <button
+            className="btn btn-ghost"
+            onClick={() => setMessages([messages[0]])}
+          >
+            <RefreshCw size={12} />
+            <span>Clear Terminal</span>
+          </button>
         </div>
 
-        {/* Message Thread */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '28px 24px',
-            maxWidth: '960px',
-            width: '100%',
-            margin: '0 auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-          }}
-        >
+        {/* Research Message Thread */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px', maxWidth: '1000px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {messages.map((m) => {
             const isUser = m.role === 'user';
             return (
               <div
                 key={m.id}
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                  alignItems: 'flex-start',
-                  alignSelf: isUser ? 'flex-end' : 'flex-start',
-                  maxWidth: isUser ? '75%' : '88%',
-                }}
+                className="animate-slide-up"
+                style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', alignSelf: isUser ? 'flex-end' : 'flex-start', maxWidth: isUser ? '75%' : '90%' }}
               >
                 {!isUser && (
-                  <div
+                  <img
+                    src="/pulse_ai_core.jpg"
+                    alt="AI"
                     style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '8px',
-                      background: 'linear-gradient(135deg, #4f46e5, #818cf8)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#ffffff',
-                      flexShrink: 0,
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1px solid rgba(59, 130, 246, 0.5)',
+                      boxShadow: '0 0 10px rgba(59, 130, 246, 0.4)',
                       marginTop: '2px',
+                      flexShrink: 0,
                     }}
-                  >
-                    <Bot size={16} />
-                  </div>
+                  />
                 )}
 
-                <div
-                  style={{
-                    backgroundColor: isUser ? '#1e1e35' : '#0e0e18',
-                    border: `1px solid ${isUser ? '#373760' : '#1e1e32'}`,
-                    padding: '16px 20px',
-                    borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)',
-                    color: '#e5e5f0',
-                    fontSize: '13.5px',
-                    lineHeight: 1.65,
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {m.content}
+                <div className={`ai-message-bubble ${isUser ? 'ai-message-bubble--user' : 'ai-message-bubble--assistant'}`}>
+                  {isUser ? (
+                    m.content
+                  ) : (
+                    <div className="markdown-body">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {m.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
 
                 {isUser && (
-                  <div
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '8px',
-                      backgroundColor: '#27273f',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#a0a0c8',
-                      flexShrink: 0,
-                      marginTop: '2px',
-                    }}
-                  >
-                    <User size={16} />
+                  <div className="ai-avatar" style={{ marginTop: '2px', color: 'var(--text-secondary)' }}>
+                    <User size={14} />
                   </div>
                 )}
               </div>
             );
           })}
 
-          {/* Typing indicator */}
+          {/* Processing indicator */}
           {chatMutation.isPending && (
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #4f46e5, #818cf8)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#ffffff',
-                }}
-              >
-                <Sparkles size={16} />
+            <div className="ai-processing animate-fade-in">
+              <div className="ai-avatar">
+                <Cpu size={14} />
               </div>
-              <div
-                style={{
-                  padding: '12px 18px',
-                  borderRadius: '16px',
-                  backgroundColor: '#0e0e18',
-                  border: '1px solid #1e1e32',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: '#818cf8',
-                  fontSize: '13px',
-                }}
-              >
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#6366f1', animation: 'pulse 1s infinite' }} />
-                <span>Pulse AI is analyzing live quotes & news...</span>
+              <div style={{ padding: '10px 16px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent)', fontSize: 'var(--text-sm)' }}>
+                <span className="ai-processing-dot" />
+                <span>Synthesizing live Indian market data & news catalysts...</span>
               </div>
             </div>
           )}
@@ -314,133 +214,47 @@ What would you like to analyze today?`,
         </div>
 
         {/* Suggestion Chips */}
-        {messages.length <= 2 && (
-          <div
-            style={{
-              padding: '8px 24px',
-              maxWidth: '960px',
-              width: '100%',
-              margin: '0 auto',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '8px',
-            }}
-          >
-            {SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => handleSend(s)}
-                style={{
-                  padding: '7px 12px',
-                  borderRadius: '8px',
-                  backgroundColor: '#12121e',
-                  border: '1px solid #232338',
-                  color: '#a5a5c5',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#6366f1';
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#232338';
-                  e.currentTarget.style.color = '#a5a5c5';
-                }}
-              >
-                {s}
-              </button>
-            ))}
+        <div style={{ padding: '4px 24px 8px', maxWidth: '1000px', width: '100%', margin: '0 auto', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {SUGGESTIONS.map((s) => (
+            <button
+              key={s}
+              className="ai-suggestion-chip"
+              onClick={() => handleSend(s)}
+              style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {/* Input Bar */}
+        <div className="ai-input-bar">
+          <div className="ai-input-wrapper">
+            <Terminal size={15} color="var(--text-muted)" />
+            <input
+              ref={inputRef}
+              type="text"
+              className="ai-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Query ticker (e.g. RELIANCE), index regime, or macroeconomic policy..."
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || chatMutation.isPending}
+              className={`btn ai-send-btn ${input.trim() && !chatMutation.isPending ? 'ai-send-btn--active' : 'ai-send-btn--disabled'}`}
+            >
+              <span>Send</span>
+              <Send size={13} />
+            </button>
           </div>
-        )}
-
-        {/* Chat Input Container */}
-        <div
-          style={{
-            padding: '16px 24px 20px',
-            backgroundColor: '#0a0a12',
-            borderTop: '1px solid #1c1c2e',
-          }}
-        >
-          <div
-            style={{
-              maxWidth: '960px',
-              margin: '0 auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                backgroundColor: '#12121e',
-                borderRadius: '12px',
-                border: '1px solid #282842',
-                padding: '4px 8px 4px 16px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-              }}
-            >
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Ask about any Indian stock, index, sector or trading concept..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={chatMutation.isPending}
-                style={{
-                  flex: 1,
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  color: '#f0f0fa',
-                  fontSize: '14px',
-                  padding: '10px 0',
-                }}
-              />
-              <button
-                onClick={() => handleSend()}
-                disabled={!input.trim() || chatMutation.isPending}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: input.trim() ? '#6366f1' : '#1c1c2e',
-                  color: input.trim() ? '#ffffff' : '#555570',
-                  fontWeight: 600,
-                  cursor: input.trim() ? 'pointer' : 'default',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '13px',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <span>Send</span>
-                <Send size={13} />
-              </button>
-            </div>
-
-            {/* Disclaimer */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                fontSize: '11px',
-                color: '#555570',
-              }}
-            >
-              <ShieldAlert size={12} />
-              <span>
-                Pulse AI provides informational analytics only. Not investment or SEBI-registered advisory.
-              </span>
-            </div>
+          <div style={{ maxWidth: '1000px', margin: '6px auto 0', display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ShieldCheck size={12} />
+              AI syntheses are informational and do not constitute registered investment advice.
+            </span>
+            <span>Press Enter to send</span>
           </div>
         </div>
       </div>

@@ -2,15 +2,15 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 
-export function useMarketNews(category = 'all', limit = 15) {
+export function useMarketNews(category = 'all', limit = 30) {
   return useQuery({
     queryKey: ['news', 'market', category, limit],
     queryFn: async () => {
       const res = await api.get(`/news?category=${category}&limit=${limit}`);
       return res.data?.articles || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-    refetchInterval: 5 * 60 * 1000,
+    staleTime: 60 * 1000, // 1 minute cache
+    refetchInterval: 2 * 60 * 1000,
   });
 }
 

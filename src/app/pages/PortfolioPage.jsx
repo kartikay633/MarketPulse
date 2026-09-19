@@ -1,631 +1,221 @@
 // ROADMAP: Section 5 & 11 — Virtual Paper Trading Portfolio Page
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePortfolio } from '../hooks/useTrade';
 import {
-  PieChart,
   TrendingUp,
   TrendingDown,
   Wallet,
   Coins,
-  ArrowUpRight,
   Zap,
   RefreshCw,
   BarChart3,
-  Layers,
-  ArrowRight,
 } from 'lucide-react';
-import { formatIndianCurrency, formatIndianNumber } from '../utils/formatters';
+import { formatIndianNumber } from '../utils/formatters';
 import ErrorBoundary from '../components/common/ErrorBoundary';
-import { TableSkeleton, CardSkeleton } from '../components/common/LoadingSkeleton';
-
-const ALLOCATION_COLORS = [
-  '#6366f1',
-  '#00c076',
-  '#eab308',
-  '#ec4899',
-  '#3b82f6',
-  '#8b5cf6',
-  '#14b8a6',
-  '#f97316',
-];
+import { CardSkeleton } from '../components/common/LoadingSkeleton';
+import CompanyLogo from '../components/common/CompanyLogo';
 
 export default function PortfolioPage() {
   const navigate = useNavigate();
   const { data: portfolio, isLoading, refetch } = usePortfolio();
 
   const account = portfolio?.account || {
-    cashBalance: 1000000,
-    totalInvested: 0,
-    totalCurrentValue: 0,
-    portfolioTotalValue: 1000000,
-    totalPL: 0,
-    totalPLPercent: 0,
-    dayTotalPL: 0,
+    cashBalance: 1000000, totalInvested: 0, totalCurrentValue: 0,
+    portfolioTotalValue: 1000000, totalPL: 0, totalPLPercent: 0, dayTotalPL: 0,
   };
 
   const positions = portfolio?.positions || [];
   const isPositiveOverall = account.totalPL >= 0;
   const isPositiveDay = account.dayTotalPL >= 0;
 
-  // Compute allocation breakdown
   const totalVal = account.portfolioTotalValue || 1000000;
   const cashPercent = totalVal > 0 ? ((account.cashBalance / totalVal) * 100).toFixed(1) : 100;
+  const equityPercent = totalVal > 0 ? (((account.totalCurrentValue || 0) / totalVal) * 100).toFixed(1) : 0;
 
   return (
     <ErrorBoundary>
-      <div style={{ padding: '28px 36px 64px', maxWidth: '1440px', margin: '0 auto' }}>
+      <div className="page-container-wide">
         {/* Page Header */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '16px',
-            marginBottom: '24px',
-            paddingBottom: '20px',
-            borderBottom: '1px solid #1c1c2e',
-          }}
-        >
+        <div className="page-header">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #00c076, #059669)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                }}
-              >
-                <PieChart size={17} />
-              </div>
-              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
-                Virtual Portfolio
-              </h1>
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(0, 192, 118, 0.15)',
-                  color: '#00c076',
-                  border: '1px solid rgba(0, 192, 118, 0.3)',
-                }}
-              >
-                LIVE HOLDINGS
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <h1 className="page-title">Virtual Portfolio & Account</h1>
+              <span className="badge">BASE CAPITAL ₹10,00,000</span>
             </div>
-            <p style={{ color: '#8888a6', fontSize: '13.5px', margin: 0 }}>
-              Real-time mark-to-market valuation, unrealized P&L, and asset allocation of your simulated trading holdings.
+            <p className="page-subtitle">
+              Live mark-to-market holdings, asset allocation, and realized/unrealized P&L from simulated trades.
             </p>
           </div>
 
-          {/* Action CTAs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button
-              onClick={() => refetch()}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '9px 14px',
-                borderRadius: '8px',
-                backgroundColor: '#10101c',
-                border: '1px solid #222238',
-                color: '#8888a6',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <RefreshCw size={14} /> Refresh
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button className="btn btn-ghost" onClick={() => refetch()}>
+              <RefreshCw size={13} />
+              <span>Refresh</span>
             </button>
-            <button
-              onClick={() => navigate('/trade')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '7px',
-                padding: '9px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
-                color: '#ffffff',
-                fontWeight: 700,
-                fontSize: '13px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
-              }}
-            >
-              <Zap size={14} />
-              <span>New Order</span>
+            <button className="btn btn-primary" onClick={() => navigate('/trade')}>
+              <Zap size={13} />
+              <span>Simulate Order</span>
             </button>
           </div>
         </div>
 
         {/* 4 Summary Metric Hero Cards */}
         {isLoading ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '16px',
-              marginBottom: '28px',
-            }}
-          >
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+            <CardSkeleton /><CardSkeleton /><CardSkeleton /><CardSkeleton />
           </div>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '16px',
-              marginBottom: '28px',
-            }}
-          >
-            {/* 1. Total Portfolio Value */}
-            <div
-              style={{
-                backgroundColor: '#0c0c16',
-                borderRadius: '12px',
-                border: '1px solid #1c1c2e',
-                padding: '20px',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '11.5px', color: '#8888a6', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Total Portfolio Value
-                </span>
-                <div
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#818cf8',
-                  }}
-                >
-                  <BarChart3 size={15} />
-                </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+            {/* Total Portfolio Value */}
+            <div className="stat-card">
+              <div className="stat-card-header">
+                <span className="stat-card-label">Total Portfolio Value</span>
+                <BarChart3 size={15} color="var(--accent)" />
               </div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
-                ₹{formatIndianNumber(account.portfolioTotalValue)}
-              </div>
-              <div
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  marginTop: '6px',
-                  color: isPositiveOverall ? '#00c076' : '#ff3b57',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                {isPositiveOverall ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-                <span>
-                  {isPositiveOverall ? '+' : ''}₹{formatIndianNumber(account.totalPL)} ({isPositiveOverall ? '+' : ''}
-                  {account.totalPLPercent}%) Total Return
-                </span>
+              <div className="stat-card-value">₹{formatIndianNumber(account.portfolioTotalValue)}</div>
+              <div className="stat-card-sub" style={{ color: isPositiveOverall ? 'var(--positive)' : 'var(--negative)', fontWeight: 600 }}>
+                {isPositiveOverall ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                <span>{isPositiveOverall ? '+' : ''}₹{formatIndianNumber(account.totalPL)} ({isPositiveOverall ? '+' : ''}{account.totalPLPercent}%) Total P&L</span>
               </div>
             </div>
 
-            {/* 2. Total Unrealized P&L */}
-            <div
-              style={{
-                backgroundColor: '#0c0c16',
-                borderRadius: '12px',
-                border: '1px solid #1c1c2e',
-                padding: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '11.5px', color: '#8888a6', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Unrealized P&L
-                </span>
-                <div
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    backgroundColor: isPositiveOverall ? 'rgba(0, 192, 118, 0.15)' : 'rgba(255, 59, 87, 0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: isPositiveOverall ? '#00c076' : '#ff3b57',
-                  }}
-                >
-                  {isPositiveOverall ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
-                </div>
+            {/* Unrealized P&L */}
+            <div className="stat-card">
+              <div className="stat-card-header">
+                <span className="stat-card-label">Unrealized P&L</span>
+                {isPositiveOverall ? <TrendingUp size={15} color="var(--positive)" /> : <TrendingDown size={15} color="var(--negative)" />}
               </div>
-              <div
-                style={{
-                  fontSize: '24px',
-                  fontWeight: 800,
-                  color: isPositiveOverall ? '#00c076' : '#ff3b57',
-                  letterSpacing: '-0.02em',
-                }}
-              >
+              <div className="stat-card-value" style={{ color: isPositiveOverall ? 'var(--positive)' : 'var(--negative)' }}>
                 {isPositiveOverall ? '+' : ''}₹{formatIndianNumber(account.totalPL)}
               </div>
-              <div style={{ fontSize: '12px', color: '#8888a6', marginTop: '6px' }}>
+              <div className="stat-card-sub">
                 Day Change:{' '}
-                <span style={{ color: isPositiveDay ? '#00c076' : '#ff3b57', fontWeight: 700 }}>
+                <span style={{ color: isPositiveDay ? 'var(--positive)' : 'var(--negative)', fontWeight: 600 }}>
                   {isPositiveDay ? '+' : ''}₹{formatIndianNumber(account.dayTotalPL)}
                 </span>
               </div>
             </div>
 
-            {/* 3. Invested Capital */}
-            <div
-              style={{
-                backgroundColor: '#0c0c16',
-                borderRadius: '12px',
-                border: '1px solid #1c1c2e',
-                padding: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '11.5px', color: '#8888a6', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Invested Capital
-                </span>
-                <div
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    backgroundColor: 'rgba(234, 179, 8, 0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#eab308',
-                  }}
-                >
-                  <Coins size={15} />
-                </div>
+            {/* Invested Capital */}
+            <div className="stat-card">
+              <div className="stat-card-header">
+                <span className="stat-card-label">Invested Capital</span>
+                <Coins size={15} color="var(--text-secondary)" />
               </div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
-                ₹{formatIndianNumber(account.totalInvested)}
-              </div>
-              <div style={{ fontSize: '12px', color: '#8888a6', marginTop: '6px' }}>
-                Current Value: <span style={{ color: '#f0f0fa', fontWeight: 600 }}>₹{formatIndianNumber(account.totalCurrentValue)}</span>
+              <div className="stat-card-value">₹{formatIndianNumber(account.totalInvested)}</div>
+              <div className="stat-card-sub">
+                Current Value: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(account.totalCurrentValue)}</span>
               </div>
             </div>
 
-            {/* 4. Available Virtual Cash */}
-            <div
-              style={{
-                backgroundColor: '#0c0c16',
-                borderRadius: '12px',
-                border: '1px solid #1c1c2e',
-                padding: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '11.5px', color: '#8888a6', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Available Cash
-                </span>
-                <div
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    backgroundColor: 'rgba(59, 130, 246, 0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#3b82f6',
-                  }}
-                >
-                  <Wallet size={15} />
-                </div>
+            {/* Available Cash */}
+            <div className="stat-card">
+              <div className="stat-card-header">
+                <span className="stat-card-label">Available Cash</span>
+                <Wallet size={15} color="var(--accent)" />
               </div>
-              <div style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
-                ₹{formatIndianNumber(account.cashBalance)}
-              </div>
-              <div style={{ fontSize: '12px', color: '#8888a6', marginTop: '6px' }}>
-                {cashPercent}% of total capital in cash
-              </div>
+              <div className="stat-card-value">₹{formatIndianNumber(account.cashBalance)}</div>
+              <div className="stat-card-sub">{cashPercent}% of base capital in cash</div>
             </div>
           </div>
         )}
 
-        {/* Asset Allocation Breakdown Bar */}
-        <div
-          style={{
-            backgroundColor: '#0c0c16',
-            borderRadius: '12px',
-            border: '1px solid #1c1c2e',
-            padding: '18px 22px',
-            marginBottom: '28px',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Layers size={15} color="#818cf8" />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Asset Allocation</span>
+        {/* Asset Allocation Bar */}
+        <div className="card card-padded" style={{ marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>Asset Allocation</span>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '11.5px', color: 'var(--text-secondary)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--accent)' }} />
+                Equities ({equityPercent}%)
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--text-muted)' }} />
+                Cash ({cashPercent}%)
+              </span>
             </div>
-            <span style={{ fontSize: '12px', color: '#8888a6' }}>
-              {positions.length} Active Positions • Cash: {cashPercent}%
-            </span>
           </div>
-
-          {/* Segmented Progress Bar */}
-          <div
-            style={{
-              height: '10px',
-              borderRadius: '5px',
-              backgroundColor: '#181828',
-              display: 'flex',
-              overflow: 'hidden',
-              marginBottom: '12px',
-            }}
-          >
-            {/* Cash segment */}
-            <div
-              style={{
-                width: `${cashPercent}%`,
-                backgroundColor: '#3b82f6',
-                transition: 'width 0.3s ease',
-              }}
-              title={`Cash: ${cashPercent}%`}
-            />
-            {/* Holding segments */}
-            {positions.map((pos, idx) => {
-              const posPercent = totalVal > 0 ? ((pos.currentValue / totalVal) * 100).toFixed(1) : 0;
-              const color = ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length];
-              return (
-                <div
-                  key={pos.symbol}
-                  style={{
-                    width: `${posPercent}%`,
-                    backgroundColor: color,
-                    transition: 'width 0.3s ease',
-                  }}
-                  title={`${pos.symbol}: ${posPercent}%`}
-                />
-              );
-            })}
-          </div>
-
-          {/* Legend Pills */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', fontSize: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6' }} />
-              <span style={{ color: '#a0a0c0' }}>Cash ({cashPercent}%)</span>
-            </div>
-            {positions.map((pos, idx) => {
-              const posPercent = totalVal > 0 ? ((pos.currentValue / totalVal) * 100).toFixed(1) : 0;
-              const color = ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length];
-              return (
-                <div key={pos.symbol} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color }} />
-                  <span style={{ color: '#a0a0c0' }}>
-                    {pos.symbol.replace('NSE:', '')} ({posPercent}%)
-                  </span>
-                </div>
-              );
-            })}
+          <div className="progress-bar-track">
+            <div className="progress-bar-fill" style={{ width: `${equityPercent}%`, backgroundColor: 'var(--accent)' }} />
+            <div className="progress-bar-fill" style={{ width: `${cashPercent}%`, backgroundColor: 'var(--text-muted)' }} />
           </div>
         </div>
 
         {/* Holdings Table */}
-        <div
-          style={{
-            backgroundColor: '#0c0c16',
-            borderRadius: '14px',
-            border: '1px solid #1c1c2e',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              padding: '18px 22px',
-              borderBottom: '1px solid #1c1c2e',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: 0 }}>
-                Stock Holdings ({positions.length})
-              </h2>
-              <span style={{ fontSize: '12px', color: '#8888a6' }}>
-                Positions enriched with real-time Upstox market ticks
-              </span>
+        <div className="card" style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Open Positions ({positions.length})
             </div>
           </div>
 
-          {isLoading ? (
-            <div style={{ padding: '20px' }}>
-              <TableSkeleton rows={5} />
-            </div>
-          ) : positions.length === 0 ? (
-            <div style={{ padding: '64px 24px', textAlign: 'center' }}>
-              <PieChart size={40} color="#333348" style={{ marginBottom: '12px' }} />
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#f0f0f5', margin: '0 0 6px' }}>
-                No active stock holdings
-              </h3>
-              <p style={{ color: '#8888a6', fontSize: '13px', margin: '0 0 20px' }}>
-                You have ₹10,00,000 in virtual trading capital ready to be deployed.
+          {positions.length === 0 ? (
+            <div className="empty-state">
+              <Wallet size={36} className="empty-state-icon" />
+              <div className="empty-state-title">No Active Holdings</div>
+              <p className="empty-state-description">
+                Execute a simulated order in the trading desk to build your virtual equity portfolio.
               </p>
-              <button
-                onClick={() => navigate('/trade')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 18px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
-                  color: '#ffffff',
-                  fontWeight: 700,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                }}
-              >
-                <Zap size={15} />
-                <span>Place Your First Paper Trade</span>
+              <button className="btn btn-primary" onClick={() => navigate('/trade')}>
+                Go to Trading Desk
               </button>
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+              <table className="data-table">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #181828', color: '#686884', fontSize: '11.5px' }}>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>INSTRUMENT</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>QTY</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>AVG PRICE</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>LTP</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>INVESTED</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>CURRENT VALUE</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600 }}>UNREALIZED P&L</th>
-                    <th style={{ padding: '14px 20px', fontWeight: 600, textAlign: 'right' }}>ACTIONS</th>
+                  <tr>
+                    <th>INSTRUMENT</th>
+                    <th style={{ textAlign: 'right' }}>QTY</th>
+                    <th style={{ textAlign: 'right' }}>AVG PRICE</th>
+                    <th style={{ textAlign: 'right' }}>LTP</th>
+                    <th style={{ textAlign: 'right' }}>INVESTED</th>
+                    <th style={{ textAlign: 'right' }}>CURRENT VALUE</th>
+                    <th style={{ textAlign: 'right' }}>UNREALIZED P&L</th>
+                    <th style={{ textAlign: 'center' }}>ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
                   {positions.map((pos) => {
                     const isPos = pos.unrealizedPL >= 0;
-                    const isDayPos = (pos.change ?? 0) >= 0;
-
                     return (
                       <tr
                         key={pos.symbol}
-                        style={{
-                          borderBottom: '1px solid #141424',
-                          transition: 'background-color 0.15s ease',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#10101c')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                        onClick={() => navigate(`/stocks/${pos.symbol}`)}
+                        style={{ cursor: 'pointer' }}
                       >
-                        {/* Instrument */}
-                        <td style={{ padding: '14px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <CompanyLogo symbol={pos.symbol} size={32} />
                             <div>
-                              <div
-                                style={{
-                                  fontWeight: 800,
-                                  color: '#ffffff',
-                                  cursor: 'pointer',
-                                }}
-                                onClick={() => navigate(`/stocks/${encodeURIComponent(pos.symbol)}`)}
-                              >
-                                {pos.symbol}
-                              </div>
-                              <div style={{ fontSize: '11.5px', color: '#8888a6' }}>{pos.name}</div>
+                              <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '13px' }}>{pos.symbol}</div>
+                              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{pos.name || 'NSE Equity'}</div>
                             </div>
                           </div>
                         </td>
-
-                        {/* Qty */}
-                        <td style={{ padding: '14px 20px', fontWeight: 700, color: '#f0f0fa' }}>{pos.quantity}</td>
-
-                        {/* Avg Price */}
-                        <td style={{ padding: '14px 20px', color: '#c0c0d8' }}>₹{formatIndianNumber(pos.avgPrice)}</td>
-
-                        {/* Current LTP */}
-                        <td style={{ padding: '14px 20px' }}>
-                          <div style={{ fontWeight: 700, color: '#ffffff' }}>₹{formatIndianNumber(pos.currentPrice)}</div>
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              color: isDayPos ? '#00c076' : '#ff3b57',
-                            }}
+                        <td className="num-tabular" style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)' }}>{pos.quantity}</td>
+                        <td className="num-tabular" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>₹{formatIndianNumber(pos.avgPrice)}</td>
+                        <td className="num-tabular" style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)' }}>₹{formatIndianNumber(pos.ltp || pos.avgPrice)}</td>
+                        <td className="num-tabular" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>₹{formatIndianNumber(pos.investedValue || pos.avgPrice * pos.quantity)}</td>
+                        <td className="num-tabular" style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-primary)' }}>₹{formatIndianNumber(pos.currentValue || (pos.ltp || pos.avgPrice) * pos.quantity)}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 600, color: isPos ? 'var(--positive)' : 'var(--negative)' }}>
+                            {isPos ? '+' : ''}₹{formatIndianNumber(pos.unrealizedPL)}
+                          </div>
+                          <div style={{ fontSize: '10.5px', color: isPos ? 'var(--positive)' : 'var(--negative)' }}>
+                            {isPos ? '+' : ''}{pos.unrealizedPLPercent}%
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <button
+                            className="chip"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/trade?symbol=${encodeURIComponent(pos.symbol)}`); }}
+                            style={{ color: 'var(--accent)' }}
                           >
-                            {isDayPos ? '+' : ''}
-                            {(pos.changePercent ?? 0).toFixed(2)}%
-                          </div>
-                        </td>
-
-                        {/* Invested */}
-                        <td style={{ padding: '14px 20px', color: '#c0c0d8' }}>
-                          ₹{formatIndianNumber(pos.investedValue)}
-                        </td>
-
-                        {/* Current Value */}
-                        <td style={{ padding: '14px 20px', fontWeight: 700, color: '#ffffff' }}>
-                          ₹{formatIndianNumber(pos.currentValue)}
-                        </td>
-
-                        {/* Unrealized P&L */}
-                        <td style={{ padding: '14px 20px' }}>
-                          <div
-                            style={{
-                              fontWeight: 800,
-                              color: isPos ? '#00c076' : '#ff3b57',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            {isPos ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-                            <span>
-                              {isPos ? '+' : ''}₹{formatIndianNumber(pos.unrealizedPL)}
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              color: isPos ? '#00c076' : '#ff3b57',
-                            }}
-                          >
-                            {isPos ? '+' : ''}
-                            {pos.unrealizedPLPercent}%
-                          </div>
-                        </td>
-
-                        {/* Action Buttons */}
-                        <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', gap: '6px' }}>
-                            <button
-                              onClick={() => navigate(`/trade?symbol=${encodeURIComponent(pos.symbol)}`)}
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '6px',
-                                backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                                border: '1px solid rgba(99, 102, 241, 0.3)',
-                                color: '#a5b4fc',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              Trade
-                            </button>
-                            <button
-                              onClick={() => navigate(`/stocks/${encodeURIComponent(pos.symbol)}`)}
-                              style={{
-                                padding: '6px 10px',
-                                borderRadius: '6px',
-                                backgroundColor: '#161626',
-                                border: '1px solid #222238',
-                                color: '#8888a6',
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              <ArrowUpRight size={14} />
-                            </button>
-                          </div>
+                            Trade
+                          </button>
                         </td>
                       </tr>
                     );

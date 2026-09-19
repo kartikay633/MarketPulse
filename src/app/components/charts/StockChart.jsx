@@ -1,4 +1,5 @@
 // ROADMAP: Section 5 & 8 — StockChart (TradingView Lightweight Charts v5)
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   createChart,
@@ -10,13 +11,14 @@ import {
   CrosshairMode,
 } from 'lightweight-charts';
 import { BarChart3, LineChart as LineIcon, Activity, Maximize2 } from 'lucide-react';
-import { formatIndianCurrency, formatIndianNumber } from '../../utils/formatters';
+import { formatIndianNumber } from '../../utils/formatters';
+import { useThemeStore } from '../../stores/themeStore';
 
 const TIMEFRAMES = [
   { id: '1D', label: '1D' },
   { id: '1W', label: '1W' },
   { id: '1M', label: '1M' },
-  { id: '3M', label: '3M' },
+  { id: '6M', label: '6M' },
   { id: '1Y', label: '1Y' },
   { id: '5Y', label: '5Y' },
 ];
@@ -38,6 +40,9 @@ export default function StockChart({
   const chartInstanceRef = useRef(null);
   const mainSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
+
+  const { theme } = useThemeStore();
+  const isLight = theme === 'light';
 
   const [chartType, setChartType] = useState('candlestick');
   const [hoverData, setHoverData] = useState(null);
@@ -68,37 +73,37 @@ export default function StockChart({
       width,
       height,
       layout: {
-        background: { type: ColorType.Solid, color: '#090910' },
-        textColor: '#82829e',
-        fontFamily: "'Inter', -apple-system, sans-serif",
+        background: { type: ColorType.Solid, color: isLight ? '#FFFFFF' : '#05070B' },
+        textColor: isLight ? '#475569' : '#94A3B8',
+        fontFamily: "'JetBrains Mono', 'Inter', system-ui, -apple-system, sans-serif",
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
-        horzLines: { color: 'rgba(255, 255, 255, 0.03)' },
+        vertLines: { color: isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.04)' },
+        horzLines: { color: isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.04)' },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
         vertLine: {
-          color: '#6366f1',
+          color: '#3B82F6',
           width: 1,
           style: 3,
-          labelBackgroundColor: '#1e1e35',
+          labelBackgroundColor: isLight ? '#1E293B' : '#0A0C10',
         },
         horzLine: {
-          color: '#6366f1',
+          color: '#3B82F6',
           width: 1,
           style: 3,
-          labelBackgroundColor: '#1e1e35',
+          labelBackgroundColor: isLight ? '#1E293B' : '#0A0C10',
         },
       },
       timeScale: {
-        borderColor: '#1c1c2e',
+        borderColor: isLight ? 'rgba(15, 23, 42, 0.10)' : 'rgba(255, 255, 255, 0.08)',
         timeVisible: true,
         secondsVisible: false,
       },
       rightPriceScale: {
-        borderColor: '#1c1c2e',
+        borderColor: isLight ? 'rgba(15, 23, 42, 0.10)' : 'rgba(255, 255, 255, 0.08)',
         scaleMargins: {
           top: 0.12,
           bottom: 0.28, // Leave room for volume at bottom
@@ -112,22 +117,22 @@ export default function StockChart({
     let mainSeries;
     if (chartType === 'candlestick') {
       mainSeries = chart.addSeries(CandlestickSeries, {
-        upColor: '#00c076',
-        downColor: '#ff3b57',
+        upColor: '#10B981',
+        downColor: '#F43F5E',
         borderVisible: false,
-        wickUpColor: '#00c076',
-        wickDownColor: '#ff3b57',
+        wickUpColor: '#10B981',
+        wickDownColor: '#F43F5E',
       });
     } else if (chartType === 'area') {
       mainSeries = chart.addSeries(AreaSeries, {
-        topColor: 'rgba(99, 102, 241, 0.45)',
-        bottomColor: 'rgba(99, 102, 241, 0.01)',
-        lineColor: '#6366f1',
+        topColor: 'rgba(59, 130, 246, 0.25)',
+        bottomColor: 'rgba(59, 130, 246, 0.00)',
+        lineColor: '#3B82F6',
         lineWidth: 2,
       });
     } else {
       mainSeries = chart.addSeries(LineSeries, {
-        color: '#6366f1',
+        color: '#3B82F6',
         lineWidth: 2,
       });
     }
@@ -151,7 +156,6 @@ export default function StockChart({
 
     // Set chart data
     if (candles && candles.length > 0) {
-      // Sort in ascending order just in case
       const sorted = [...candles].sort((a, b) => a.time - b.time);
 
       if (chartType === 'candlestick') {
@@ -164,7 +168,7 @@ export default function StockChart({
         sorted.map((c) => ({
           time: c.time,
           value: c.volume || 0,
-          color: c.close >= c.open ? 'rgba(0, 192, 118, 0.45)' : 'rgba(255, 59, 87, 0.45)',
+          color: c.close >= c.open ? 'rgba(16, 185, 129, 0.40)' : 'rgba(244, 63, 94, 0.40)',
         }))
       );
 
@@ -215,7 +219,7 @@ export default function StockChart({
       chart.remove();
       chartInstanceRef.current = null;
     };
-  }, [candles, chartType]);
+  }, [candles, chartType, theme, isLight]);
 
   const handleFit = () => {
     if (chartInstanceRef.current) {
@@ -242,12 +246,13 @@ export default function StockChart({
 
   return (
     <div
+      className="card"
       style={{
-        backgroundColor: '#0d0d16',
-        borderRadius: '16px',
-        border: '1px solid #1e1e32',
+        backgroundColor: isLight ? '#FFFFFF' : '#05070B',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-card)',
         overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
       }}
     >
       {/* Chart Top Controls Bar */}
@@ -257,14 +262,15 @@ export default function StockChart({
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '12px 18px',
-          borderBottom: '1px solid #19192b',
-          backgroundColor: '#0a0a12',
+          padding: '10px 16px',
+          borderBottom: '1px solid var(--border-subtle)',
+          backgroundColor: isLight ? '#F8FAFC' : 'rgba(10, 12, 16, 0.85)',
+          backdropFilter: 'blur(12px)',
           gap: '12px',
         }}
       >
         {/* Timeframe Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#131322', padding: '3px', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255, 255, 255, 0.04)', padding: '3px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
           {TIMEFRAMES.map((tf) => {
             const isActive = selectedTimeframe === tf.id;
             return (
@@ -272,15 +278,16 @@ export default function StockChart({
                 key={tf.id}
                 onClick={() => onTimeframeChange && onTimeframeChange(tf.id)}
                 style={{
-                  padding: '5px 11px',
-                  borderRadius: '6px',
+                  padding: '4px 12px',
+                  borderRadius: 'var(--radius-xs)',
                   border: 'none',
-                  fontSize: '11.5px',
+                  fontSize: '11px',
                   fontWeight: 600,
                   cursor: 'pointer',
-                  backgroundColor: isActive ? '#6366f1' : 'transparent',
-                  color: isActive ? '#ffffff' : '#8888a6',
-                  transition: 'all 0.15s ease',
+                  backgroundColor: isActive ? 'var(--accent)' : 'transparent',
+                  color: isActive ? '#FFFFFF' : 'var(--text-secondary)',
+                  boxShadow: isActive ? '0 2px 8px var(--accent-glow)' : 'none',
+                  transition: 'all var(--transition-fast)',
                 }}
               >
                 {tf.label}
@@ -291,7 +298,7 @@ export default function StockChart({
 
         {/* Chart Type Selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', backgroundColor: '#131322', padding: '3px', borderRadius: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', backgroundColor: 'rgba(255, 255, 255, 0.04)', padding: '3px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
             {CHART_TYPES.map((ct) => {
               const Icon = ct.icon;
               const isActive = chartType === ct.id;
@@ -304,15 +311,15 @@ export default function StockChart({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '5px',
-                    padding: '5px 10px',
-                    borderRadius: '6px',
-                    border: 'none',
+                    padding: '4px 9px',
+                    borderRadius: 'var(--radius-xs)',
                     fontSize: '11px',
                     fontWeight: 500,
                     cursor: 'pointer',
-                    backgroundColor: isActive ? '#242440' : 'transparent',
-                    color: isActive ? '#f0f0fa' : '#777794',
-                    transition: 'all 0.15s ease',
+                    backgroundColor: isActive ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                    color: isActive ? 'var(--accent-bright)' : 'var(--text-secondary)',
+                    border: isActive ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent',
+                    transition: 'all var(--transition-fast)',
                   }}
                 >
                   <Icon size={13} />
@@ -326,14 +333,15 @@ export default function StockChart({
             onClick={handleFit}
             title="Reset Zoom / Fit Chart"
             style={{
-              padding: '6px 8px',
-              borderRadius: '8px',
-              backgroundColor: '#131322',
-              border: '1px solid #202035',
-              color: '#8b8ba8',
+              padding: '6px 9px',
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
+              transition: 'all var(--transition-fast)',
             }}
           >
             <Maximize2 size={13} />
@@ -347,40 +355,39 @@ export default function StockChart({
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
-          gap: '18px',
-          padding: '10px 18px',
-          backgroundColor: '#090910',
-          borderBottom: '1px solid #151524',
+          gap: '16px',
+          padding: '8px 16px',
+          backgroundColor: isLight ? '#F1F5F9' : '#070A0F',
+          borderBottom: '1px solid var(--border-subtle)',
           fontSize: '12px',
-          fontFamily: "'JetBrains Mono', monospace",
         }}
       >
-        <div style={{ color: '#6e6e88' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: '11.5px', fontFamily: 'var(--font-mono)' }}>
           {activeCandle ? formatTime(activeCandle.time) : '--'}
         </div>
 
         {activeCandle?.open !== undefined && (
-          <div style={{ display: 'flex', gap: '14px' }}>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center', fontFamily: 'var(--font-mono)' }}>
             <span>
-              <span style={{ color: '#606078' }}>O: </span>
-              <span style={{ color: '#d0d0e2', fontWeight: 600 }}>₹{formatIndianNumber(activeCandle.open)}</span>
+              <span style={{ color: 'var(--text-muted)' }}>O: </span>
+              <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{formatIndianNumber(activeCandle.open)}</span>
             </span>
             <span>
-              <span style={{ color: '#606078' }}>H: </span>
-              <span style={{ color: '#00c076', fontWeight: 600 }}>₹{formatIndianNumber(activeCandle.high)}</span>
+              <span style={{ color: 'var(--text-muted)' }}>H: </span>
+              <span style={{ color: 'var(--positive)', fontWeight: 600 }}>₹{formatIndianNumber(activeCandle.high)}</span>
             </span>
             <span>
-              <span style={{ color: '#606078' }}>L: </span>
-              <span style={{ color: '#ff3b57', fontWeight: 600 }}>₹{formatIndianNumber(activeCandle.low)}</span>
+              <span style={{ color: 'var(--text-muted)' }}>L: </span>
+              <span style={{ color: 'var(--negative)', fontWeight: 600 }}>₹{formatIndianNumber(activeCandle.low)}</span>
             </span>
             <span>
-              <span style={{ color: '#606078' }}>C: </span>
-              <span style={{ color: isBullish ? '#00c076' : '#ff3b57', fontWeight: 700 }}>
+              <span style={{ color: 'var(--text-muted)' }}>C: </span>
+              <span style={{ color: isBullish ? 'var(--positive)' : 'var(--negative)', fontWeight: 600 }}>
                 ₹{formatIndianNumber(activeCandle.close)}
               </span>
             </span>
             <span>
-              <span style={{ color: isBullish ? '#00c076' : '#ff3b57', fontWeight: 600 }}>
+              <span style={{ color: isBullish ? 'var(--positive)' : 'var(--negative)', fontWeight: 600 }}>
                 {candleChange >= 0 ? '+' : ''}{candleChange.toFixed(2)} ({candleChangePct.toFixed(2)}%)
               </span>
             </span>
@@ -388,36 +395,35 @@ export default function StockChart({
         )}
 
         {activeCandle?.open === undefined && activeCandle?.close !== undefined && (
-          <div>
-            <span style={{ color: '#606078' }}>Price: </span>
-            <span style={{ color: '#6366f1', fontWeight: 700 }}>₹{formatIndianNumber(activeCandle.close)}</span>
+          <div style={{ fontFamily: 'var(--font-mono)' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Price: </span>
+            <span style={{ color: 'var(--accent-bright)', fontWeight: 600 }}>₹{formatIndianNumber(activeCandle.close)}</span>
           </div>
         )}
 
         {activeCandle?.volume !== undefined && (
-          <div style={{ marginLeft: 'auto' }}>
-            <span style={{ color: '#606078' }}>Vol: </span>
-            <span style={{ color: '#a5a5c4' }}>{formatIndianNumber(activeCandle.volume)}</span>
+          <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Vol: </span>
+            <span style={{ color: 'var(--text-secondary)' }}>{formatIndianNumber(activeCandle.volume)}</span>
           </div>
         )}
       </div>
 
       {/* Chart Canvas Area */}
-      <div style={{ position: 'relative', width: '100%', minHeight: '460px' }}>
+      <div style={{ position: 'relative', width: '100%', minHeight: '460px', backgroundColor: isLight ? '#FFFFFF' : '#05070B' }}>
         {isLoading && (
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              backgroundColor: 'rgba(9, 9, 16, 0.7)',
-              backdropFilter: 'blur(3px)',
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
               zIndex: 10,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              color: '#8282a5',
+              color: 'var(--text-secondary)',
               fontSize: '13px',
             }}
           >
@@ -426,8 +432,8 @@ export default function StockChart({
                 width: '24px',
                 height: '24px',
                 borderRadius: '50%',
-                border: '2.5px solid #282845',
-                borderTopColor: '#6366f1',
+                border: '2.5px solid var(--border-subtle)',
+                borderTopColor: 'var(--accent)',
                 animation: 'spin 0.8s linear infinite',
               }}
             />

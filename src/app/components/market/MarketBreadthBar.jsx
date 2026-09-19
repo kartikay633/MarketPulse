@@ -1,6 +1,7 @@
-// ROADMAP: Section 2 & Phase 2 — Market Breadth Bar Component
+// ROADMAP: Section 2 & Design Refinement — Institutional Market Breadth Bar
 import React from 'react';
 import { formatNumber } from '../../utils/formatters';
+import { ArrowUpRight, ArrowDownRight, Activity, ShieldAlert } from 'lucide-react';
 
 export function MarketBreadthBar({ breadth }) {
   if (!breadth) return null;
@@ -13,35 +14,78 @@ export function MarketBreadthBar({ breadth }) {
   const unchPct = ((unchanged / total) * 100).toFixed(1);
 
   const adRatio = declining > 0 ? (advancing / declining).toFixed(2) : advancing;
+  const isBullish = parseFloat(adRatio) >= 1.0;
 
   return (
     <div
+      className="card card-padded"
       style={{
-        padding: '18px 20px',
-        borderRadius: '12px',
-        backgroundColor: '#12121a',
-        border: '1px solid #1e1e30',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: '14px',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f0f0f5' }}>Market Breadth (NSE)</span>
-          <span style={{ fontSize: '11px', color: '#606078' }}>A/D Ratio: <strong style={{ color: '#f0f0f5' }}>{adRatio}</strong></span>
+      {/* Top Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isBullish ? '#10B981' : '#F43F5E', boxShadow: `0 0 10px ${isBullish ? '#10B981' : '#F43F5E'}` }} />
+          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            NSE Market Breadth & Participation
+          </span>
         </div>
-        <div style={{ display: 'flex', gap: '14px', fontSize: '12px' }}>
-          <span style={{ color: '#00c853', fontWeight: 600 }}>
-            {formatNumber(advancing, 0)} <span style={{ fontSize: '11px', fontWeight: 400, color: '#a0a0b8' }}>Adv ({advPct}%)</span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span 
+            className="badge" 
+            style={{ 
+              backgroundColor: isBullish ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+              color: isBullish ? 'var(--positive-text)' : 'var(--negative-text)',
+              border: `1px solid ${isBullish ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)'}`,
+              padding: '3px 10px',
+              fontSize: '11px',
+              fontWeight: 700,
+            }}
+          >
+            {isBullish ? 'BULLISH SKEW' : 'BEARISH SKEW'} • A/D {adRatio}
           </span>
-          <span style={{ color: '#ff1744', fontWeight: 600 }}>
-            {formatNumber(declining, 0)} <span style={{ fontSize: '11px', fontWeight: 400, color: '#a0a0b8' }}>Dec ({decPct}%)</span>
-          </span>
-          <span style={{ color: '#a0a0b8', fontWeight: 500 }}>
-            {formatNumber(unchanged, 0)} <span style={{ fontSize: '11px', fontWeight: 400, color: '#606078' }}>Unch</span>
-          </span>
+        </div>
+      </div>
+
+      {/* 3 Metric Tiles */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
+        {/* Advancing Tile */}
+        <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.20)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Advancing</div>
+            <div className="num-tabular" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--positive-text)' }}>
+              {formatNumber(advancing, 0)} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>({advPct}%)</span>
+            </div>
+          </div>
+          <ArrowUpRight size={18} color="var(--positive)" />
+        </div>
+
+        {/* Declining Tile */}
+        <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.20)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Declining</div>
+            <div className="num-tabular" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--negative-text)' }}>
+              {formatNumber(declining, 0)} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>({decPct}%)</span>
+            </div>
+          </div>
+          <ArrowDownRight size={18} color="var(--negative)" />
+        </div>
+
+        {/* Unchanged Tile */}
+        <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Unchanged</div>
+            <div className="num-tabular" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {formatNumber(unchanged, 0)} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)' }}>({unchPct}%)</span>
+            </div>
+          </div>
+          <Activity size={18} color="var(--text-muted)" />
         </div>
       </div>
 
@@ -51,35 +95,39 @@ export function MarketBreadthBar({ breadth }) {
           width: '100%',
           height: '8px',
           borderRadius: '4px',
+          backgroundColor: 'rgba(255, 255, 255, 0.06)',
           display: 'flex',
           overflow: 'hidden',
-          backgroundColor: '#1a1a28',
           gap: '2px',
         }}
       >
         <div
           style={{
             width: `${advPct}%`,
-            backgroundColor: '#00c853',
+            background: 'linear-gradient(90deg, #059669, #10B981)',
+            borderRadius: '4px 0 0 4px',
+            boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
             transition: 'width 0.4s ease',
           }}
-          title={`Advancing: ${advancing}`}
+          title={`Advancing: ${advancing} (${advPct}%)`}
         />
         <div
           style={{
             width: `${unchPct}%`,
-            backgroundColor: '#606078',
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
             transition: 'width 0.4s ease',
           }}
-          title={`Unchanged: ${unchanged}`}
+          title={`Unchanged: ${unchanged} (${unchPct}%)`}
         />
         <div
           style={{
             width: `${decPct}%`,
-            backgroundColor: '#ff1744',
+            background: 'linear-gradient(90deg, #F43F5E, #E11D48)',
+            borderRadius: '0 4px 4px 0',
+            boxShadow: '0 0 10px rgba(244, 63, 94, 0.5)',
             transition: 'width 0.4s ease',
           }}
-          title={`Declining: ${declining}`}
+          title={`Declining: ${declining} (${decPct}%)`}
         />
       </div>
     </div>

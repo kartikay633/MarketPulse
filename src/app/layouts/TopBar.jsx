@@ -1,19 +1,25 @@
-// ROADMAP: Section 3 & 5 — TopBar Component
+// ROADMAP: Section 3, 5 & Design Refinement — Institutional Terminal TopBar
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 import { useMarketOverview } from '../hooks/useMarketData';
 import { MarketStatusBadge } from '../components/market/MarketStatusBadge';
 import SearchModal from '../components/navigation/SearchModal';
-import { Search, Bell, LogOut, ChevronDown } from 'lucide-react';
+import { Search, Bell, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function TopBar() {
   const navigate = useNavigate();
   const { user, profile, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const { data: overview } = useMarketOverview();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Detect OS for keyboard shortcut display
+  const isMac = typeof navigator !== 'undefined' && navigator.platform?.includes('Mac');
+  const shortcutKey = isMac ? '⌘K' : 'Ctrl+K';
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -26,7 +32,7 @@ export function TopBar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Trader';
+  const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Trader';
 
   const handleLogout = async () => {
     await logout();
@@ -34,215 +40,106 @@ export function TopBar() {
     navigate('/login');
   };
 
+  const handleToggleTheme = () => {
+    toggleTheme();
+    toast.success(`Switched to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`);
+  };
+
   return (
     <>
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-      <header
-        style={{
-          height: '64px',
-          backgroundColor: '#0a0a0f',
-          borderBottom: '1px solid #1e1e30',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 28px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 20,
-        }}
-      >
-        {/* Search Input Bar */}
+      <header className="topbar">
+        {/* Global Search Bar */}
         <div
+          className="topbar-search"
           onClick={() => setIsSearchOpen(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '8px 14px',
-          borderRadius: '8px',
-          backgroundColor: '#12121a',
-          border: '1px solid #222236',
-          width: '360px',
-          cursor: 'pointer',
-          color: '#606078',
-          fontSize: '13px',
-          transition: 'all 0.15s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#3366ff';
-          e.currentTarget.style.backgroundColor = '#181824';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#222236';
-          e.currentTarget.style.backgroundColor = '#12121a';
-        }}
-      >
-        <Search size={15} color="#606078" />
-        <span style={{ flex: 1 }}>Search NSE/BSE stocks, indices, sectors...</span>
-        <span
-          style={{
-            fontSize: '10px',
-            backgroundColor: '#1e1e30',
-            color: '#a0a0b8',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            fontFamily: "'JetBrains Mono', monospace",
-          }}
         >
-          ⌘K
-        </span>
-      </div>
-
-      {/* Right Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        {/* Real-time Market Status */}
-        <MarketStatusBadge
-          status={overview?.status || 'CLOSED'}
-          reason={overview?.statusMessage}
-        />
-
-        {/* Notifications */}
-        <button
-          title="Alerts & Notifications"
-          onClick={() => navigate('/alerts')}
-          style={{
-            padding: '8px',
-            borderRadius: '8px',
-            backgroundColor: '#12121a',
-            border: '1px solid #1e1e30',
-            color: '#a0a0b8',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            position: 'relative',
-          }}
-        >
-          <Bell size={16} />
-          <span
-            style={{
-              position: 'absolute',
-              top: '6px',
-              right: '6px',
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: '#3366ff',
-            }}
-          />
-        </button>
-
-        {/* Profile Dropdown */}
-        <div style={{ position: 'relative' }}>
-          <div
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '4px 10px 4px 6px',
-              borderRadius: '8px',
-              backgroundColor: '#12121a',
-              border: '1px solid #1e1e30',
-              cursor: 'pointer',
-            }}
-          >
-            <div
-              style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #1e3a8a, #3366ff)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: 700,
-              }}
-            >
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: '#f0f0f5' }}>{displayName}</span>
-            <ChevronDown size={14} color="#606078" />
-          </div>
-
-          {/* Profile Menu Popup */}
-          {showProfileMenu && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '42px',
-                right: 0,
-                width: '180px',
-                backgroundColor: '#12121a',
-                border: '1px solid #2a2a44',
-                borderRadius: '10px',
-                padding: '8px',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
-                zIndex: 50,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-              }}
-            >
-              <div style={{ padding: '6px 10px', borderBottom: '1px solid #1e1e30', marginBottom: '4px' }}>
-                <div style={{ fontSize: '11px', color: '#606078' }}>Signed in as</div>
-                <div style={{ fontSize: '12px', fontWeight: 500, color: '#f0f0f5', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {user?.email}
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  navigate('/settings');
-                }}
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  textAlign: 'left',
-                  fontSize: '12px',
-                  color: '#a0a0b8',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  width: '100%',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1a1a28')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-              >
-                Settings & Preferences
-              </button>
-
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  textAlign: 'left',
-                  fontSize: '12px',
-                  color: '#ff5252',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  width: '100%',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 23, 68, 0.1)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-              >
-                <LogOut size={13} />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          )}
+          <Search size={14} color="var(--text-muted)" />
+          <span className="topbar-search-placeholder">Search NSE/BSE stocks, indices...</span>
+          <span className="topbar-kbd">{shortcutKey}</span>
         </div>
-      </div>
-    </header>
-  </>
-);
+
+        {/* Right Terminal Controls */}
+        <div className="topbar-controls">
+          {/* Real-time Market Status */}
+          <MarketStatusBadge
+            status={overview?.status || 'CLOSED'}
+            reason={overview?.statusMessage}
+          />
+
+          {/* Theme Toggle Button */}
+          <button
+            className="topbar-icon-btn"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            onClick={handleToggleTheme}
+            style={{ color: theme === 'dark' ? '#F59E0B' : '#3B82F6' }}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+
+          {/* Price Alerts Notification Button */}
+          <button
+            className="topbar-icon-btn"
+            title="Price Alerts & Triggers"
+            onClick={() => navigate('/alerts')}
+          >
+            <Bell size={15} />
+            <span className="topbar-notification-dot" />
+          </button>
+
+          {/* User Profile Menu */}
+          <div style={{ position: 'relative' }}>
+            <div
+              className="topbar-profile-trigger"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+            >
+              <div className="topbar-avatar">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+              <span className="topbar-profile-name">{displayName}</span>
+              <ChevronDown size={13} color="var(--text-muted)" />
+            </div>
+
+            {/* Profile Dropdown */}
+            {showProfileMenu && (
+              <>
+                <div
+                  className="dropdown-backdrop"
+                  onClick={() => setShowProfileMenu(false)}
+                />
+                <div className="topbar-dropdown">
+                  <div className="dropdown-header">
+                    <div className="dropdown-label">Account</div>
+                    <div className="dropdown-value">
+                      {user?.email || 'demo@marketpulse.in'}
+                    </div>
+                  </div>
+
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      navigate('/settings');
+                    }}
+                  >
+                    Settings & Profile
+                  </button>
+
+                  <button
+                    className="dropdown-item dropdown-item--danger"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={13} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+    </>
+  );
 }
 
 export default TopBar;

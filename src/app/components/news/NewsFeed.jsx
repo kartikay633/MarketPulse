@@ -1,8 +1,9 @@
 // ROADMAP: Section 5 & 9 — NewsFeed Component
+// Institutional Terminal Styling — Exact Market Pulse Design System
 import React, { useState } from 'react';
 import NewsCard from './NewsCard';
 import { Skeleton } from '../common/LoadingSkeleton';
-import { Search, Filter, Newspaper, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, Newspaper } from 'lucide-react';
 
 const CATEGORIES = [
   { id: 'all', label: 'All News' },
@@ -32,40 +33,29 @@ export default function NewsFeed({
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Category Pills & Search Filter Bar */}
       <div
+        className="card"
         style={{
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '12px',
-          padding: '12px 16px',
-          backgroundColor: '#0a0a12',
-          borderRadius: '12px',
-          border: '1px solid #1c1c2e',
+          padding: '10px 16px',
         }}
       >
         {/* Category Tabs */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+        <div className="tab-group" style={{ flexWrap: 'wrap' }}>
           {CATEGORIES.map((cat) => {
             const isActive = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => onCategoryChange && onCategoryChange(cat.id)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: isActive ? '#6366f1' : '#141422',
-                  color: isActive ? '#ffffff' : '#8888aa',
-                  transition: 'all 0.15s ease',
-                }}
+                className={`tab-pill ${isActive ? 'tab-pill--active' : ''}`}
+                style={{ fontSize: '12px', padding: '5px 12px' }}
               >
                 {cat.label}
               </button>
@@ -74,32 +64,16 @@ export default function NewsFeed({
         </div>
 
         {/* Search Input & Refresh */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              backgroundColor: '#12121e',
-              border: '1px solid #232338',
-            }}
-          >
-            <Search size={14} color="#686888" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={13} className="input-icon" />
             <input
               type="text"
               placeholder="Filter headlines..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: '#f0f0fa',
-                fontSize: '12px',
-                width: '150px',
-              }}
+              className="input input--with-icon"
+              style={{ width: '160px', padding: '6px 10px 6px 30px', fontSize: '12px' }}
             />
           </div>
 
@@ -107,16 +81,8 @@ export default function NewsFeed({
             <button
               onClick={onRefresh}
               title="Refresh News"
-              style={{
-                padding: '8px',
-                borderRadius: '8px',
-                backgroundColor: '#141422',
-                border: '1px solid #232338',
-                color: '#8b8ba8',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-              }}
+              className="btn-icon"
+              style={{ padding: '6px 8px' }}
             >
               <RefreshCw size={13} />
             </button>
@@ -126,23 +92,21 @@ export default function NewsFeed({
 
       {/* Loading Skeletons */}
       {isLoading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
+              className="card"
               style={{
-                padding: '18px',
-                borderRadius: '12px',
-                backgroundColor: '#0d0d16',
-                border: '1px solid #1c1c2e',
+                padding: '16px 20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: '8px',
               }}
             >
               <Skeleton width="120px" height="14px" />
-              <Skeleton width="85%" height="18px" />
-              <Skeleton width="60%" height="14px" />
+              <Skeleton width="85%" height="16px" />
+              <Skeleton width="60%" height="13px" />
             </div>
           ))}
         </div>
@@ -150,29 +114,18 @@ export default function NewsFeed({
 
       {/* Empty State */}
       {!isLoading && filtered.length === 0 && (
-        <div
-          style={{
-            padding: '48px 20px',
-            textAlign: 'center',
-            backgroundColor: '#0d0d16',
-            borderRadius: '12px',
-            border: '1px solid #1c1c2e',
-            color: '#717192',
-          }}
-        >
-          <Newspaper size={32} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#f0f0fa', marginBottom: '4px' }}>
-            No news articles found
-          </div>
-          <div style={{ fontSize: '12px' }}>
-            {filterText ? `No articles matching "${filterText}"` : 'No articles available for this category right now.'}
+        <div className="card empty-state">
+          <Newspaper size={36} className="empty-state-icon" />
+          <div className="empty-state-title">No Articles Found</div>
+          <div className="empty-state-description">
+            No news matching your filter criteria. Try adjusting your query or category.
           </div>
         </div>
       )}
 
-      {/* Articles List */}
+      {/* Articles Feed */}
       {!isLoading && filtered.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {filtered.map((article) => (
             <NewsCard key={article.id} article={article} />
           ))}
